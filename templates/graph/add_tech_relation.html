@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Añadir relación — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Añadir relación entre tecnologías</h1>
+    <p>Define cómo se relacionan dos tecnologías entre sí.</p>
+  </div>
+  <a href="{% url 'technology_list' %}" class="btn btn-ghost">← Volver</a>
+</div>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:0.75rem; margin-bottom:2rem">
+  <div class="card">
+    <span class="rel-badge rel-compatible">compatible_with</span>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem">Funcionan bien juntas en el mismo proyecto. Bidireccional.</p>
+  </div>
+  <div class="card">
+    <span class="rel-badge rel-depends">depends_on</span>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem">A está construida sobre B. Ej: TypeScript → JavaScript.</p>
+  </div>
+  <div class="card">
+    <span class="rel-badge rel-alternative">alternative_to</span>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem">Pueden sustituirse. Ej: Vite ↔ Webpack.</p>
+  </div>
+  <div class="card">
+    <span class="rel-badge rel-extends">extends</span>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem">A es un superconjunto o capa sobre B.</p>
+  </div>
+</div>
+
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:end">
+      <div class="form-group" style="margin-bottom:0">
+        <label for="{{ form.tech_a.id_for_label }}">{{ form.tech_a.label }}</label>
+        {{ form.tech_a }}
+      </div>
+      <div style="padding-bottom:0.6rem; color:var(--text-muted); font-size:1.2rem; text-align:center">→</div>
+      <div class="form-group" style="margin-bottom:0">
+        <label for="{{ form.tech_b.id_for_label }}">{{ form.tech_b.label }}</label>
+        {{ form.tech_b }}
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:1.2rem">
+      <label for="{{ form.relation_type.id_for_label }}">{{ form.relation_type.label }}</label>
+      {{ form.relation_type }}
+    </div>
+    <button type="submit" class="btn btn-primary">Crear relación</button>
+  </form>
+</div>
+{% endblock %}

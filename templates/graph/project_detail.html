@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }} — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="tag tag-project" style="margin-bottom:0.5rem; display:inline-block">{{ project.project_type }}</span>
+    <h1>{{ project.title }}</h1>
+    {% if project.description %}<p>{{ project.description }}</p>{% endif %}
+    <div class="flex items-center gap-md flex-wrap" style="margin-top:1rem">
+      <span class="muted mono" style="font-size:0.8rem">Author: {{ project.author_username }}</span>
+      {% if project.url %}
+        <a href="{{ project.url }}" target="_blank" class="muted mono" style="font-size:0.8rem">{{ project.url }}</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 320px; gap:2rem; align-items:start">
+
+  <div>
+    <div class="section-title">Visualización del Stack</div>
+    <div class="graph-container" style="margin-bottom:2rem">
+      <div id="subgraph" style="height:400px"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--primary)"></div> Project</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div> Technology</div>
+      </div>
+    </div>
+
+    {% if technologies %}
+      <div class="section-title">Tecnologías utilizadas</div>
+      <div class="grid grid-2">
+        {% for t in technologies %}
+          <a href="{% url 'technology_detail' t.slug %}" style="text-decoration:none">
+            <div class="card">
+              <span class="tag tag-{{ t.tech_type }}">{{ t.tech_type }}</span>
+              <div class="card-title" style="margin-top:0.4rem">{{ t.name }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div>
+    {% if related %}
+      <div class="section-title">Proyectos con stack similar</div>
+      <div class="card" style="margin-bottom:1.5rem">
+        {% for p in related %}
+          <div class="cooc-row" style="padding:0.75rem 0">
+            <a href="{% url 'project_detail' p.slug %}" class="title-link">{{ p.title }}</a>
+            <span class="tag tag-project" style="font-size:0.65rem">{{ p.project_type }}</span>
+          </div>
+          {% if not forloop.last %}<div style="height:1px; background:var(--border); margin:0.25rem 0"></div>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="section-title">Acciones</div>
+    <div class="card">
+      <p style="font-size:0.82rem; color:var(--text-dim); margin-bottom:1rem">
+        Explora cómo se conectan estas tecnologías en el grafo global.
+      </p>
+      <a href="{% url 'global_graph' %}" class="btn btn-ghost" style="width:100%; justify-content:center">
+        Ver grafo completo
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="subgraph-data" type="application/json">{{ subgraph|safe }}</script>
+<script>
+const SUBGRAPH = JSON.parse(document.getElementById('subgraph-data').textContent);
+const { network } = initGraph('subgraph', SUBGRAPH);
+
+network.on('click', function(params) {
+  if (params.nodes.length === 0) return;
+  const nodeId = params.nodes[0];
+  const node = SUBGRAPH.nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  if (node.type === 'technology') window.location.href = `/graph/technologies/${node.slug}/`;
+  else if (node.type === 'project') window.location.href = `/graph/projects/${node.slug}/`;
+});
+
+network.on('hoverNode', () => document.getElementById('subgraph').style.cursor = 'pointer');
+network.on('blurNode',  () => document.getElementById('subgraph').style.cursor = 'default');
+</script>
+{% endblock %}

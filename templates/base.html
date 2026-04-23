@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TechGraph{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="layout">
+
+<nav>
+  <a href="{% url 'home' %}" class="nav-brand">TechGraph</a>
+  <div class="nav-links">
+    <a href="{% url 'home' %}"            {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Home</a>
+    <a href="{% url 'global_graph' %}"    {% if request.resolver_match.url_name == 'global_graph' %}class="active"{% endif %}>Graph</a>
+    <a href="{% url 'technology_list' %}" {% if 'technology' in request.resolver_match.url_name %}class="active"{% endif %}>Technologies</a>
+    <a href="{% url 'project_list' %}"    {% if 'project' in request.resolver_match.url_name %}class="active"{% endif %}>Projects</a>
+    <a href="{% url 'find_path' %}"       {% if request.resolver_match.url_name == 'find_path' %}class="active"{% endif %}>Find Path</a>
+    <a href="{% url 'filter_projects' %}" {% if request.resolver_match.url_name == 'filter_projects' %}class="active"{% endif %}>Filter</a>
+  </div>
+  <div class="nav-auth">
+    {% if user.is_authenticated %}
+      <span class="muted mono" style="font-size:0.78rem">{{ user.username }}</span>
+      <a href="{% url 'add_technology' %}" class="btn btn-ghost btn-sm">+ Technology</a>
+      <a href="{% url 'add_project' %}"    class="btn btn-primary btn-sm">+ Project</a>
+      <form action="{% url 'logout' %}" method="post" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}"    class="btn btn-ghost btn-sm">Login</a>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Register</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="main">
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<script src="{% static 'js/graph.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

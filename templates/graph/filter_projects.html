@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Filtrar por stack — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Filtrar por stack</h1>
+    <p>Encuentra proyectos que usan <strong>todas</strong> las tecnologías seleccionadas.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:2rem; border-color:#1e3a6b; background:#0d1929">
+  <p style="font-size:0.85rem; color:var(--text-dim)">
+    <span style="color:var(--accent); font-weight:700">Graph power:</span>
+    Intersección de grafos con Cypher:
+    <span class="mono" style="color:var(--accent3)">WHERE ALL(s IN $slugs WHERE s IN used_slugs)</span>.
+    En SQL requeriría tantos JOINs como tecnologías seleccionadas.
+  </p>
+</div>
+
+<div style="display:grid; grid-template-columns:280px 1fr; gap:2rem; align-items:start">
+
+  <div>
+    <div class="section-title">Selecciona tecnologías</div>
+    <form method="get">
+      <div class="card" style="padding:1rem">
+        <div style="display:flex; flex-direction:column; gap:0.4rem; max-height:440px; overflow-y:auto">
+          {% for tech in technologies %}
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.25rem 0">
+              <input type="checkbox" name="techs" value="{{ tech.slug }}"
+                {% if tech.slug in selected %}checked{% endif %}>
+              <span class="tag tag-{{ tech.tech_type }}">{{ tech.name }}</span>
+            </label>
+          {% empty %}
+            <p class="muted" style="font-size:0.82rem">No hay tecnologías.</p>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:1rem; width:100%; justify-content:center">
+          Buscar
+        </button>
+        {% if selected %}
+          <a href="{% url 'filter_projects' %}" class="btn btn-ghost" style="margin-top:0.5rem; width:100%; justify-content:center">
+            Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <div>
+    {% if selected %}
+      <div class="section-title">
+        Proyectos usando
+        {% for s in selected %}<span class="tag tag-other">{{ s }}</span> {% endfor %}
+      </div>
+
+      {% if results %}
+        <div class="grid grid-2">
+          {% for p in results %}
+            <a href="{% url 'project_detail' p.slug %}" style="text-decoration:none">
+              <div class="card">
+                <span class="tag tag-project">{{ p.project_type }}</span>
+                <div class="card-title" style="margin-top:0.4rem">{{ p.title }}</div>
+                {% if p.description %}
+                  <p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.3rem">
+                    {{ p.description|truncatechars:90 }}
+                  </p>
+                {% endif %}
+                <div class="card-meta" style="margin-top:0.6rem">by {{ p.author }}</div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align:center; padding:2rem; color:var(--text-muted)">
+          No hay proyectos con exactamente esta combinación.
+          <br><a href="{% url 'add_project' %}" class="btn btn-primary" style="margin-top:1rem">Sé el primero en añadir uno</a>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="card" style="text-align:center; padding:3rem; color:var(--text-muted)">
+        Selecciona una o más tecnologías para filtrar proyectos.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

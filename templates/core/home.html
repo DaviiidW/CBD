@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}TechGraph — Technology Explorer{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Technology Graph</h1>
+    <p>Explora cómo tecnologías, frameworks y proyectos se conectan entre sí.</p>
+  </div>
+  <div class="flex gap-sm">
+    <a href="{% url 'global_graph' %}" class="btn btn-ghost">Ver grafo completo</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'add_project' %}" class="btn btn-primary">+ Añadir proyecto</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-3 section" style="grid-template-columns: repeat(auto-fill, minmax(160px,1fr))">
+  <div class="stat-box">
+    <span class="num">{{ top_techs|length }}+</span>
+    <span class="lbl">Technologies</span>
+  </div>
+  <div class="stat-box">
+    <span class="num">{{ recent_projects|length }}+</span>
+    <span class="lbl">Projects</span>
+  </div>
+  <div class="stat-box">
+    <span class="num">{{ cooccurrence|length }}+</span>
+    <span class="lbl">Connections</span>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 340px; gap:2rem; align-items:start">
+
+  <div>
+    <div class="section-title">Proyectos recientes</div>
+    {% if recent_projects %}
+      <div class="grid grid-2">
+        {% for p in recent_projects %}
+          <a href="{% url 'project_detail' p.slug %}" style="text-decoration:none">
+            <div class="card">
+              <div class="flex items-center gap-sm flex-wrap" style="margin-bottom:0.4rem">
+                <span class="tag tag-project">{{ p.project_type }}</span>
+              </div>
+              <div class="card-title">{{ p.title }}</div>
+              <p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.3rem">
+                {{ p.description|truncatechars:90 }}
+              </p>
+              <div class="card-meta" style="margin-top:0.6rem">by {{ p.author_username }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+      <a href="{% url 'project_list' %}" class="btn btn-ghost" style="margin-top:1rem">Todos los proyectos →</a>
+    {% else %}
+      <div class="card" style="text-align:center; padding:2rem; color:var(--text-muted)">
+        <p>No hay proyectos aún.</p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'add_project' %}" class="btn btn-primary" style="margin-top:1rem">Añade el primero</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="section-title">Tecnologías más conectadas</div>
+    <div class="card" style="margin-bottom:1.5rem">
+      {% for t in top_techs %}
+        <div class="cooc-row">
+          <a href="{% url 'technology_detail' t.slug %}" class="tag tag-{{ t.tech_type }}">{{ t.name }}</a>
+          <span class="cooc-count">{{ t.connections }} conexiones</span>
+        </div>
+      {% empty %}
+        <p class="muted" style="font-size:0.85rem">No hay tecnologías aún.</p>
+      {% endfor %}
+    </div>
+
+    <div class="section-title">Tecnologías que van juntas</div>
+    <div class="card">
+      {% for pair in cooccurrence %}
+        <div class="cooc-row">
+          <a href="{% url 'technology_detail' pair.slug_a %}" class="tag tag-other">{{ pair.tech_a }}</a>
+          <span style="color:var(--text-muted); font-size:0.7rem">+</span>
+          <a href="{% url 'technology_detail' pair.slug_b %}" class="tag tag-other">{{ pair.tech_b }}</a>
+          <span class="cooc-count">{{ pair.count }} proyectos</span>
+        </div>
+      {% empty %}
+        <p class="muted" style="font-size:0.85rem">Añade más proyectos para ver patrones.</p>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top:1.5rem; display:flex; flex-direction:column; gap:0.5rem">
+      <a href="{% url 'find_path' %}"       class="btn btn-ghost">🔗 Buscar camino entre tecnologías</a>
+      <a href="{% url 'filter_projects' %}" class="btn btn-ghost">🔍 Filtrar proyectos por stack</a>
+      <a href="{% url 'add_tech_relation' %}" class="btn btn-ghost">⟷ Añadir relación entre tecnologías</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

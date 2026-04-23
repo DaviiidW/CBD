@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Login — TechGraph{% endblock %}
+
+{% block content %}
+<div style="max-width:400px; margin:4rem auto">
+  <div class="form-card">
+    <h1 style="font-size:1.5rem; margin-bottom:0.25rem">Login</h1>
+    <p class="muted" style="font-size:0.85rem; margin-bottom:1.5rem">Inicia sesión para añadir proyectos y tecnologías.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}
+            <p style="color:var(--danger); font-size:0.78rem; margin-top:0.3rem">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      {% if form.non_field_errors %}
+        <p style="color:var(--danger); font-size:0.82rem; margin-bottom:0.75rem">{{ form.non_field_errors }}</p>
+      {% endif %}
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center">Entrar</button>
+    </form>
+
+    <p style="margin-top:1.25rem; font-size:0.85rem; color:var(--text-muted); text-align:center">
+      ¿Sin cuenta? <a href="{% url 'register' %}">Regístrate</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

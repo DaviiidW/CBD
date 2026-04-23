@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Technologies — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Technologies</h1>
+    <p>Explora el ecosistema de herramientas y cómo se relacionan entre sí.</p>
+  </div>
+  <div class="flex gap-sm">
+    <a href="{% url 'find_path' %}" class="btn btn-ghost">Comparar camino</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'add_technology' %}" class="btn btn-primary">+ Añadir tecnología</a>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 340px; gap:2.5rem; align-items:start">
+
+  <div>
+    <div class="section-title">Todas las tecnologías</div>
+    <div class="grid grid-2">
+      {% for tech in technologies %}
+        <a href="{% url 'technology_detail' tech.slug %}" style="text-decoration:none">
+          <div class="card">
+            <span class="tag tag-{{ tech.tech_type }}">{{ tech.tech_type }}</span>
+            <div class="card-title" style="margin-top:0.4rem">{{ tech.name }}</div>
+            {% if tech.description %}
+              <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.3rem">
+                {{ tech.description|truncatechars:80 }}
+              </p>
+            {% endif %}
+          </div>
+        </a>
+      {% empty %}
+        <p class="muted">No hay tecnologías registradas.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div>
+    {% if top_technologies %}
+      <div class="section-title">Más conectadas</div>
+      <div class="card" style="margin-bottom:2rem">
+        {% for t in top_technologies %}
+          <div class="cooc-row" style="padding:0.6rem 0">
+            <a href="{% url 'technology_detail' t.slug %}" class="title-link" style="font-size:0.9rem">{{ t.name }}</a>
+            <span class="muted mono" style="font-size:0.75rem">{{ t.connections }} rel.</span>
+          </div>
+          {% if not forloop.last %}<div style="height:1px; background:var(--border); opacity:0.5"></div>{% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if cooccurrence %}
+      <div class="section-title">Co-ocurrencia en proyectos</div>
+      <div class="card">
+        <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:0.75rem">Tecnologías que suelen usarse juntas.</p>
+        {% for pair in cooccurrence %}
+          <div style="margin-bottom:0.75rem">
+            <div class="flex items-center gap-xs flex-wrap">
+              <a href="{% url 'technology_detail' pair.slug_a %}" class="tag tag-ghost">{{ pair.tech_a }}</a>
+              <span class="muted">+</span>
+              <a href="{% url 'technology_detail' pair.slug_b %}" class="tag tag-ghost">{{ pair.tech_b }}</a>
+            </div>
+            <div class="muted mono" style="font-size:0.7rem; margin-top:0.2rem">{{ pair.count }} proyectos</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

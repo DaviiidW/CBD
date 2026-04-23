@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Grafo completo — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Knowledge Graph</h1>
+    <p>Todas las tecnologías y proyectos de la base de datos, y cómo se conectan.</p>
+  </div>
+  <div class="flex gap-sm">
+    <a href="{% url 'find_path' %}"       class="btn btn-ghost btn-sm">Buscar camino</a>
+    <a href="{% url 'filter_projects' %}" class="btn btn-ghost btn-sm">Filtrar stack</a>
+  </div>
+</div>
+
+<div class="graph-container">
+  <div id="graph" class="graph-canvas" style="height:600px"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Language</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> Framework</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Library</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Tool</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Database</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div> Platform</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f97316; border-radius:0; transform:rotate(45deg); width:10px; height:10px"></div> Project</div>
+    <div class="legend-item" style="margin-left:auto; font-size:0.7rem; color:var(--text-muted)">
+      Scroll para zoom · Arrastra para mover · Click en un nodo para verlo
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="graph-data" type="application/json">{{ graph_data|safe }}</script>
+<script>
+const GRAPH_DATA = JSON.parse(document.getElementById('graph-data').textContent);
+const { network } = initGraph('graph', GRAPH_DATA);
+
+network.on('click', function(params) {
+  if (params.nodes.length === 0) return;
+  const nodeId = params.nodes[0];
+  const node = GRAPH_DATA.nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  if (node.type === 'technology') window.location.href = `/graph/technologies/${node.slug}/`;
+  else if (node.type === 'project') window.location.href = `/graph/projects/${node.slug}/`;
+});
+
+network.on('hoverNode', () => document.getElementById('graph').style.cursor = 'pointer');
+network.on('blurNode',  () => document.getElementById('graph').style.cursor = 'default');
+</script>
+{% endblock %}

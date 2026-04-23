@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}{{ tech.name }} — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="tag tag-{{ tech.tech_type }}" style="margin-bottom:0.5rem; display:inline-block">{{ tech.tech_type }}</span>
+    <h1>{{ tech.name }}</h1>
+    {% if tech.description %}<p>{{ tech.description }}</p>{% endif %}
+    {% if tech.url %}<a href="{{ tech.url }}" target="_blank" class="muted mono" style="font-size:0.8rem">{{ tech.url }}</a>{% endif %}
+  </div>
+  {% if user.is_authenticated %}
+    <a href="{% url 'add_tech_relation' %}" class="btn btn-ghost btn-sm">+ Añadir relación</a>
+  {% endif %}
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 320px; gap:2rem; align-items:start">
+
+  <div>
+    <div class="section-title">Grafo local</div>
+    <div class="graph-container" style="margin-bottom:2rem">
+      <div id="subgraph" style="height:380px"></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> compatible_with</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> depends_on</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> alternative_to</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> extends</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> used_by (project)</div>
+      </div>
+    </div>
+
+    {% if projects %}
+      <div class="section-title">Proyectos que usan {{ tech.name }}</div>
+      <div class="grid grid-2">
+        {% for p in projects %}
+          <a href="{% url 'project_detail' p.slug %}" style="text-decoration:none">
+            <div class="card">
+              <span class="tag tag-project">{{ p.project_type }}</span>
+              <div class="card-title" style="margin-top:0.4rem">{{ p.title }}</div>
+              <div class="card-meta">{{ p.author_username }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div>
+    {% if compatible %}
+      <div class="section-title">Tecnologías relacionadas</div>
+      <div class="card" style="margin-bottom:1.25rem">
+        {% for t in compatible %}
+          <div class="cooc-row">
+            <a href="{% url 'technology_detail' t.slug %}" class="tag tag-{{ t.tech_type }}">{{ t.name }}</a>
+            <span class="rel-badge rel-{{ t.relationship }}">{{ t.relationship }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if alternatives %}
+      <div class="section-title">Alternativas</div>
+      <div class="card" style="margin-bottom:1.25rem">
+        {% for t in alternatives %}
+          <div class="cooc-row">
+            <a href="{% url 'technology_detail' t.slug %}" class="tag tag-{{ t.tech_type }}">{{ t.name }}</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="section-title">Buscar camino desde aquí</div>
+    <div class="card">
+      <p style="font-size:0.82rem; color:var(--text-dim); margin-bottom:0.75rem">
+        ¿Cómo se conecta {{ tech.name }} con otra tecnología?
+      </p>
+      <a href="{% url 'find_path' %}?from={{ tech.slug }}" class="btn btn-ghost" style="width:100%; justify-content:center">
+        Buscar camino →
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="subgraph-data" type="application/json">{{ subgraph|safe }}</script>
+<script>
+const SUBGRAPH = JSON.parse(document.getElementById('subgraph-data').textContent);
+const { network } = initGraph('subgraph', SUBGRAPH);
+
+network.on('click', function(params) {
+  if (params.nodes.length === 0) return;
+  const nodeId = params.nodes[0];
+  const node = SUBGRAPH.nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  if (node.type === 'technology') window.location.href = `/graph/technologies/${node.slug}/`;
+  else if (node.type === 'project') window.location.href = `/graph/projects/${node.slug}/`;
+});
+network.on('hoverNode', () => document.getElementById('subgraph').style.cursor = 'pointer');
+network.on('blurNode',  () => document.getElementById('subgraph').style.cursor = 'default');
+</script>
+{% endblock %}

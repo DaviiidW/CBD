@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Buscar camino — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Buscar camino</h1>
+    <p>Descubre cómo dos tecnologías están conectadas a través del grafo.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:2rem; border-color:#1e3a6b; background:#0d1929">
+  <p style="font-size:0.85rem; color:var(--text-dim)">
+    <span style="color:var(--accent); font-weight:700">Graph power:</span>
+    Esta query usa <span class="mono" style="color:var(--accent3)">shortestPath()</span> en Cypher para recorrer
+    cualquier cadena de relaciones hasta 6 saltos de profundidad.
+    En SQL requeriría CTEs recursivos o múltiples self-joins.
+  </p>
+</div>
+
+<div class="form-card" style="margin-bottom:2rem">
+  <form method="get">
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:end">
+      <div class="form-group" style="margin-bottom:0">
+        <label for="from">Desde</label>
+        <select name="from" id="from">
+          <option value="">— selecciona —</option>
+          {% for tech in technologies %}
+            <option value="{{ tech.slug }}" {% if tech.slug == slug_a %}selected{% endif %}>
+              {{ tech.name }} ({{ tech.tech_type }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="padding-bottom:0.6rem; color:var(--text-muted); font-size:1.4rem; text-align:center">⟶</div>
+      <div class="form-group" style="margin-bottom:0">
+        <label for="to">Hasta</label>
+        <select name="to" id="to">
+          <option value="">— selecciona —</option>
+          {% for tech in technologies %}
+            <option value="{{ tech.slug }}" {% if tech.slug == slug_b %}selected{% endif %}>
+              {{ tech.name }} ({{ tech.tech_type }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-top:1.2rem">Buscar camino</button>
+  </form>
+</div>
+
+{% if error %}
+  <div class="card" style="border-color:#7f1d1d; background:#4a1212; color:#fca5a5">{{ error }}</div>
+{% endif %}
+
+{% if result %}
+  <div class="section-title">Camino encontrado — {{ result|length }} nodo{{ result|length|pluralize }}</div>
+  <div class="path-chain">
+    {% for node in result %}
+      {% if node.type == 'project' %}
+        <a href="{% url 'project_detail' node.slug %}" class="tag tag-project" style="padding:0.4rem 0.9rem; font-size:0.85rem">
+          {{ node.name }}
+        </a>
+      {% else %}
+        <a href="{% url 'technology_detail' node.slug %}" class="tag tag-{{ node.tech_type }}" style="padding:0.4rem 0.9rem; font-size:0.85rem">
+          {{ node.name }}
+        </a>
+      {% endif %}
+      {% if not forloop.last %}<span class="arrow">──</span>{% endif %}
+    {% endfor %}
+  </div>
+  <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem">
+    Camino más corto. Haz click en cualquier nodo para explorarlo.
+  </p>
+{% endif %}
+{% endblock %}

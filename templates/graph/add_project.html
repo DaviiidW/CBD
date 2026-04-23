@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Añadir proyecto — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Añadir proyecto</h1>
+    <p>Comparte un proyecto y vincúlalo a las tecnologías que usa.</p>
+  </div>
+  <a href="{% url 'project_list' %}" class="btn btn-ghost">← Volver</a>
+</div>
+
+<div class="form-card" style="max-width:760px">
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+      <div class="form-group">
+        <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+        {{ form.title }}
+        {% for error in form.title.errors %}<p style="color:var(--danger);font-size:0.78rem;margin-top:0.3rem">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="form-group">
+        <label for="{{ form.project_type.id_for_label }}">{{ form.project_type.label }}</label>
+        {{ form.project_type }}
+        {% for error in form.project_type.errors %}<p style="color:var(--danger);font-size:0.78rem;margin-top:0.3rem">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+      {{ form.description }}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.url.id_for_label }}">{{ form.url.label }}</label>
+      {{ form.url }}
+    </div>
+
+    <div class="form-group">
+      <label>{{ form.technologies.label }}</label>
+      <div class="checkbox-list">
+        {% for choice in form.technologies %}
+          {{ choice }}
+        {% endfor %}
+      </div>
+      {% if not form.technologies.choices %}
+        <p style="color:var(--text-muted); font-size:0.82rem; margin-top:0.5rem">
+          No encuentro la tecnología que quiero. <a href="{% url 'add_technology' %}">Añadir nueva tecnología.</a>
+        </p>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top:0.5rem">Guardar proyecto</button>
+  </form>
+</div>
+{% endblock %}

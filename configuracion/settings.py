@@ -5,6 +5,7 @@ Django settings for configuracion project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from urllib.parse import quote_plus
 
 load_dotenv()
 
@@ -65,9 +66,20 @@ DATABASES = {
     }
 }
 
-NEOMODEL_NEO4J_BOLT_URL = os.getenv(
-    'NEO4J_BOLT_URL', 'bolt://neo4j:password@localhost:7687'
-)
+_neo4j_uri      = os.getenv('NEO4J_URI', '')
+_neo4j_user     = os.getenv('NEO4J_USERNAME', 'neo4j')
+_neo4j_password = os.getenv('NEO4J_PASSWORD', '')
+
+if _neo4j_uri:
+    _scheme, _host = _neo4j_uri.split('://')
+    NEOMODEL_NEO4J_BOLT_URL = (
+        f"{_scheme}://{quote_plus(_neo4j_user)}:{quote_plus(_neo4j_password)}@{_host}"
+    )
+else:
+    NEOMODEL_NEO4J_BOLT_URL = os.getenv(
+        'NEO4J_BOLT_URL', 'bolt://neo4j:password@localhost:7687'
+    )
+
 NEOMODEL_SIGNALS = True
 NEOMODEL_FORCE_TIMEZONE = False
 

@@ -140,7 +140,7 @@ La sección **Graph** muestra un grafo interactivo con todos los nodos y conexio
 | 🟡 Amarillo | Tool |
 | 🔴 Rojo | Database |
 | 🩵 Cian | Platform |
-| 🟠 Naranja (rombo) | Project |
+| ⚫ Gris (rombo) | Project |
 
 Los nodos con forma de **rombo** son proyectos. El resto son tecnologías.
 

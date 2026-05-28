@@ -202,8 +202,6 @@ def graph_data_api(request):
     return JsonResponse(data)
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
 def _slugify(text: str) -> str:
     text = text.lower().strip()
     text = re.sub(r'[^\w\s-]', '', text)
@@ -212,38 +210,79 @@ def _slugify(text: str) -> str:
 
 
 def _build_tech_subgraph(tech) -> dict:
+    from neomodel import db
+
+    results, _ = db.cypher_query(
+        """
+        MATCH (t:Technology {slug: $slug})
+        MATCH (t)-[r]-(n)
+        RETURN 
+            labels(n)[0] AS label,
+            COALESCE(n.uid, n.name) AS id,
+            CASE 
+                WHEN n:Technology THEN n.name 
+                WHEN n:Project THEN n.title 
+                WHEN n:TechnologyVersion THEN n.name 
+                WHEN n:Tag THEN n.name 
+            END AS name,
+            CASE 
+                WHEN n:Technology THEN n.tech_type 
+                WHEN n:Project THEN n.project_type 
+                WHEN n:TechnologyVersion THEN 'version' 
+                WHEN n:Tag THEN 'tag'
+            END AS subtype,
+            COALESCE(n.slug, n.name) AS slug,
+            type(r) AS rel_type,
+            startNode(r) = t AS is_outgoing
+        """,
+        {'slug': tech.slug}
+    )
+
     nodes = [{'id': tech.uid, 'label': tech.name, 'type': 'technology', 'subtype': tech.tech_type, 'main': True, 'slug': tech.slug}]
     edges = []
     seen = {tech.uid}
 
-    def add_related(items, rel_label, direction='out'):
-        for t in items:
-            if t.uid not in seen:
-                is_project = hasattr(t, 'title')
-                label = t.title if is_project else t.name
-                node_type = 'project' if is_project else 'technology'
-                subtype = getattr(t, 'project_type', getattr(t, 'tech_type', 'other'))
-                
-                nodes.append({
-                    'id': t.uid, 
-                    'label': label, 
-                    'type': node_type, 
-                    'subtype': subtype, 
-                    'main': False,
-                    'slug': t.slug
-                })
-                seen.add(t.uid)
+    for row in results:
+        node_label, node_id, name, subtype, slug, rel_type, is_outgoing = row
+        
+        if node_label == 'Technology':
+            node_type = 'technology'
+        elif node_label == 'Project':
+            node_type = 'project'
+        elif node_label == 'TechnologyVersion':
+            node_type = 'version'
+        elif node_label == 'Tag':
+            node_type = 'tag'
+        else:
+            node_type = 'other'
             
-            if direction == 'out':
-                edges.append({'from': tech.uid, 'to': t.uid, 'label': rel_label})
-            else:
-                edges.append({'from': t.uid, 'to': tech.uid, 'label': rel_label})
-
-    add_related(tech.compatible_with.all(), 'compatible_with')
-    add_related(tech.depends_on.all(), 'depends_on')
-    add_related(tech.alternative_to.all(), 'alternative_to')
-    add_related(tech.extends.all(), 'extends')
-    add_related(tech.used_by.all()[:8], 'used_by', direction='in')
+        if node_id not in seen:
+            nodes.append({
+                'id': node_id,
+                'label': name,
+                'type': node_type,
+                'subtype': subtype,
+                'main': False,
+                'slug': slug
+            })
+            seen.add(node_id)
+            
+        rel_label = rel_type
+        if rel_type == 'COMPATIBLE_WITH':
+            rel_label = 'compatible_with'
+        elif rel_type == 'DEPENDS_ON':
+            rel_label = 'depends_on'
+        elif rel_type == 'ALTERNATIVE_TO':
+            rel_label = 'alternative_to'
+        elif rel_type == 'EXTENDS':
+            rel_label = 'extends'
+        elif rel_type == 'USES':
+            rel_label = 'used_by'
+            
+        if is_outgoing:
+            edges.append({'from': tech.uid, 'to': node_id, 'label': rel_label})
+        else:
+            edges.append({'from': node_id, 'to': tech.uid, 'label': rel_label})
 
     return {'nodes': nodes, 'edges': edges}
 

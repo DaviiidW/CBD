@@ -145,3 +145,21 @@ def get_most_connected_technologies(limit: int = 10) -> list[dict]:
         {'name': r[0], 'slug': r[1], 'tech_type': r[2], 'connections': r[3]}
         for r in results
     ]
+
+
+def get_graph_stats() -> dict:
+    results, _ = db.cypher_query(
+        """
+        MATCH (t:Technology) WITH count(t) AS techs
+        MATCH (p:Project) WITH techs, count(p) AS projects
+        MATCH ()-[r]->() WITH techs, projects, count(r) AS connections
+        RETURN techs, projects, connections
+        """
+    )
+    if results:
+        return {
+            'total_techs': results[0][0],
+            'total_projects': results[0][1],
+            'total_connections': results[0][2]
+        }
+    return {'total_techs': 0, 'total_projects': 0, 'total_connections': 0}

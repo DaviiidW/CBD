@@ -1,6 +1,5 @@
 import os
 import json
-import re
 from datetime import datetime
 from urllib.request import Request, urlopen
 from urllib.error import URLError
@@ -125,15 +124,6 @@ class Command(BaseCommand):
                     t_node.tagged_as.connect(tags_map[t_name])
 
             versions_to_create = real_versions_map.get(slug, [])
-            if not versions_to_create:
-                versions_to_create = [
-                    ["1.0.0", t_node.release_year or 2020],
-                    ["1.1.0", (t_node.release_year or 2020) + 1],
-                    ["2.0.0", (t_node.release_year or 2020) + 2],
-                    ["2.1.0", (t_node.release_year or 2020) + 3],
-                    ["3.0.0", (t_node.release_year or 2020) + 4],
-                ]
-
             for v_str, year in versions_to_create:
                 existing_v = t_node.has_version.get_or_none(version=v_str)
                 if not existing_v:

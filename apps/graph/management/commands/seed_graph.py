@@ -23,7 +23,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--limit',
             type=int,
-            default=100
+            default=250
         )
 
     def handle(self, *args, **options):
@@ -178,23 +178,29 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'  [OK] Relaciones creadas: {rel_created_count}. Errores/omitidas: {rel_error_count}.'))
 
         self.stdout.write('\n[4/5] Descargando proyectos reales de código abierto desde la API de GitHub...')
-        limit = min(options['limit'], 200)
+        limit = min(options['limit'], 500)
         github_projects = []
         api_success = False
 
-        url = f"https://api.github.com/search/repositories?q=stars:>10000&sort=stars&order=desc&per_page={limit}"
-        req = Request(url)
-        req.add_header('User-Agent', 'TechGraph-Populate-Command')
-        
-        self.stdout.write(f'  -> Petición HTTP: {url}')
+        pages_needed = (limit + 99) // 100
         try:
-            with urlopen(req, timeout=12) as response:
-                res_data = json.loads(response.read().decode('utf-8'))
-                items = res_data.get('items', [])
-                if items:
-                    github_projects = items
-                    api_success = True
-                    self.stdout.write(self.style.SUCCESS(f'  [OK] Descargados con éxito {len(github_projects)} proyectos de GitHub.'))
+            for page in range(1, pages_needed + 1):
+                page_limit = min(100, limit - len(github_projects))
+                if page_limit <= 0:
+                    break
+                url = f"https://api.github.com/search/repositories?q=stars:>10000&sort=stars&order=desc&per_page={page_limit}&page={page}"
+                req = Request(url)
+                req.add_header('User-Agent', 'TechGraph-Populate-Command')
+                self.stdout.write(f'  -> Petición HTTP: {url}')
+                with urlopen(req, timeout=12) as response:
+                    res_data = json.loads(response.read().decode('utf-8'))
+                    items = res_data.get('items', [])
+                    if items:
+                        github_projects.extend(items)
+            
+            if github_projects:
+                api_success = True
+                self.stdout.write(self.style.SUCCESS(f'  [OK] Descargados con éxito {len(github_projects)} proyectos de GitHub.'))
         except URLError as e:
             self.stdout.write(self.style.WARNING(f'  [!] No se pudo conectar a GitHub (Error: {e.reason}).'))
         except Exception as e:

@@ -49,10 +49,22 @@ def technology_detail(request, slug):
 
 
 def project_list(request):
-    projects = Project.nodes.order_by('title').all()
+    from django.core.paginator import Paginator
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        projects_query = Project.nodes.filter(title__icontains=q).order_by('title')
+    else:
+        projects_query = Project.nodes.order_by('title')
+
+    paginator = Paginator(projects_query, 21)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'graph/project_list.html', {
-        'projects': projects,
+        'page_obj': page_obj,
         'project_types': PROJECT_TYPES,
+        'q': q,
     })
 
 

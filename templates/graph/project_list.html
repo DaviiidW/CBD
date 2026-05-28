@@ -10,34 +10,58 @@
   <div class="flex gap-sm">
     <a href="{% url 'filter_projects' %}" class="btn btn-ghost">Filtrar por stack</a>
     {% if user.is_authenticated %}
-      <a href="{% url 'add_project' %}" class="btn btn-primary">+ Añadir proyecto</a>
+    <a href="{% url 'add_project' %}" class="btn btn-primary">+ Añadir proyecto</a>
     {% endif %}
   </div>
 </div>
 
+<form method="GET" action="{% url 'project_list' %}" class="flex gap-xs flex-wrap items-center"
+  style="margin-bottom: 2rem; width: 100%; max-width: 500px;">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre..."
+    style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.9rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text-color); min-width: 200px;">
+  <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Buscar</button>
+  {% if q %}
+  <a href="{% url 'project_list' %}" class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Limpiar</a>
+  {% endif %}
+</form>
+
 <div class="grid grid-2">
-  {% for project in projects %}
-    <a href="{% url 'project_detail' project.slug %}" style="text-decoration:none">
-      <div class="card">
-        <div class="flex items-center gap-sm flex-wrap" style="margin-bottom:0.5rem">
-          <span class="tag tag-project">{{ project.project_type }}</span>
-        </div>
-        <div class="card-title">{{ project.title }}</div>
-        {% if project.description %}
-          <p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.3rem">
-            {{ project.description|truncatechars:110 }}
-          </p>
-        {% endif %}
-        <div class="card-meta" style="margin-top:0.75rem">by {{ project.author_username }}</div>
+  {% for project in page_obj %}
+  <a href="{% url 'project_detail' project.slug %}" style="text-decoration:none">
+    <div class="card">
+      <div class="flex items-center gap-sm flex-wrap" style="margin-bottom:0.5rem">
+        <span class="tag tag-project">{{ project.project_type }}</span>
       </div>
-    </a>
-  {% empty %}
-    <div class="card" style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--text-muted)">
-      No hay proyectos aún.
-      {% if user.is_authenticated %}
-        <br><a href="{% url 'add_project' %}" class="btn btn-primary" style="margin-top:1rem">Añade el primero</a>
+      <div class="card-title">{{ project.title }}</div>
+      {% if project.description %}
+      <p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.3rem">
+        {{ project.description|truncatechars:110 }}
+      </p>
       {% endif %}
+      <div class="card-meta" style="margin-top:0.75rem">by {{ project.author_username }}</div>
     </div>
+  </a>
+  {% empty %}
+  <div class="card" style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--text-muted)">
+    No se encontraron proyectos.
+    {% if user.is_authenticated %}
+    <br><a href="{% url 'add_project' %}" class="btn btn-primary" style="margin-top:1rem">Añade uno nuevo</a>
+    {% endif %}
+  </div>
   {% endfor %}
 </div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination flex items-center justify-center gap-sm" style="margin-top: 2.5rem; margin-bottom: 1.5rem;">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-ghost">Anterior</a>
+  {% endif %}
+  <span style="font-size: 0.9rem; color: var(--text-dim);">
+    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+  </span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-ghost">Siguiente</a>
+  {% endif %}
+</div>
+{% endif %}
 {% endblock %}

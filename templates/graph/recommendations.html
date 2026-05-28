@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Recommendations — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Motor de Recomendación</h1>
+    <p>Sugerencias de tecnologías personalizadas basadas en Neo4j Graph Data Science (GDS)</p>
+  </div>
+  {% if user.is_authenticated %}
+    <div>
+      <form method="post" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="recompute" value="1">
+        <button type="submit" class="btn btn-ghost btn-sm" style="border-color:var(--accent2); color:var(--accent2)">
+          ◈ Forzar Recálculo GDS
+        </button>
+      </form>
+    </div>
+  {% endif %}
+</div>
+
+<div class="section-title">Tecnologías sugeridas para ti</div>
+{% if recommendations %}
+  <div class="grid grid-3">
+    {% for rec in recommendations %}
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; gap:0.5rem">
+            <a href="{% url 'technology_detail' rec.slug %}" class="tag tag-{{ rec.tech_type }}">{{ rec.name }}</a>
+            <span class="rel-badge rel-compatible" style="font-size:0.65rem">Relevancia: {{ rec.score }}</span>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1rem">
+            {{ rec.description|default:"Sin descripción disponible."|truncatechars:120 }}
+          </p>
+        </div>
+        
+        <div style="border-top:1px solid var(--border); padding-top:0.75rem; margin-top:0.5rem; display:flex; justify-content:flex-end">
+          <a href="{% url 'like_technology' rec.slug %}?next={% url 'recommendations' %}" class="btn btn-ghost btn-sm" style="border-color:var(--accent3); color:var(--accent3)">
+            ♡ Like
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card" style="text-align:center; padding:3rem 1.5rem; max-width:680px; margin:0 auto">
+    <p style="color:var(--text-dim); margin-bottom:1rem; font-weight:700">Aún no se han calculado recomendaciones GDS para tu perfil.</p>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.5rem; line-height:1.5">
+      Para ver tus recomendaciones colaborativas, dale Like a tecnologías de tu interés y presiona el botón <strong>Forzar Recálculo GDS</strong> arriba (una vez esté activo el plugin Graph Data Science en la base de datos).
+    </p>
+    <a href="{% url 'technology_list' %}" class="btn btn-primary btn-sm">Explorar catálogo y dar Like</a>
+  </div>
+{% endif %}
+{% endblock %}

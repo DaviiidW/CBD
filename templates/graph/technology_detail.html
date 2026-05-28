@@ -10,7 +10,14 @@
     {% if tech.url %}<a href="{{ tech.url }}" target="_blank" class="muted mono" style="font-size:0.8rem">{{ tech.url }}</a>{% endif %}
   </div>
   {% if user.is_authenticated %}
-    <a href="{% url 'add_tech_relation' %}" class="btn btn-ghost btn-sm">+ Añadir relación</a>
+    <div class="flex gap-sm items-center">
+      {% if has_liked %}
+        <a href="{% url 'unlike_technology' tech.slug %}" class="btn btn-ghost btn-sm" style="border-color: var(--danger); color: var(--danger)">♥ Liked</a>
+      {% else %}
+        <a href="{% url 'like_technology' tech.slug %}" class="btn btn-primary btn-sm" style="background: var(--accent3)">♡ Like</a>
+      {% endif %}
+      <a href="{% url 'add_tech_relation' %}" class="btn btn-ghost btn-sm">+ Añadir relación</a>
+    </div>
   {% endif %}
 </div>
 

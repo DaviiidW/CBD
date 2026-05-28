@@ -13,6 +13,7 @@ const TYPE_COLORS = {
   project:   { bg: '#3d1a00', border: '#f97316', font: '#fdba74' },
   tag:       { bg: '#3b123d', border: '#d946ef', font: '#f5d0fe' },
   version:   { bg: '#063c21', border: '#22c55e', font: '#86efac' },
+  user:      { bg: '#2b104a', border: '#8b5cf6', font: '#d8b4fe' },
 };
 
 const REL_COLORS = {
@@ -30,6 +31,9 @@ const REL_COLORS = {
   extends:         '#8b5cf655',
   uses:            '#f9741655',
   used_by:         '#f9741655',
+  similarity:      '#8b5cf666',
+  like:            '#10b98166',
+  virtual:         '#64748b44',
 };
 
 function buildNode(n) {

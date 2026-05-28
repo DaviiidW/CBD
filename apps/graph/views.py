@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
 
-from .models import Technology, Project, TECH_TYPES, PROJECT_TYPES
+from .models import Technology, Project, User, TECH_TYPES, PROJECT_TYPES
+from .services import recommendation_service
 from . import queries
 from .forms import TechnologyForm, ProjectForm, TechRelationForm
 
@@ -39,12 +40,19 @@ def technology_detail(request, slug):
     projects = tech.used_by.all()
     subgraph = _build_tech_subgraph(tech)
 
+    has_liked = False
+    if request.user.is_authenticated:
+        n_user = User.nodes.get_or_none(username=request.user.username)
+        if n_user and n_user.likes.is_connected(tech):
+            has_liked = True
+
     return render(request, 'graph/technology_detail.html', {
         'tech': tech,
         'compatible': compatible,
         'alternatives': alternatives,
         'projects': projects,
         'subgraph': json.dumps(subgraph),
+        'has_liked': has_liked,
     })
 
 
@@ -306,3 +314,82 @@ def _build_project_subgraph(project, technologies) -> dict:
         nodes.append({'id': tech.uid, 'label': tech.name, 'type': 'technology', 'subtype': tech.tech_type, 'main': False, 'slug': tech.slug})
         edges.append({'from': project.uid, 'to': tech.uid, 'label': 'uses'})
     return {'nodes': nodes, 'edges': edges}
+
+
+@login_required
+def like_technology(request, slug):
+    try:
+        tech = Technology.nodes.get(slug=slug)
+    except Technology.DoesNotExist:
+        messages.error(request, 'Technology not found.')
+        return redirect('technology_list')
+
+    n_user = User.nodes.get_or_none(username=request.user.username)
+    if not n_user:
+        n_user = User(username=request.user.username, email=request.user.email or '').save()
+
+    if not n_user.likes.is_connected(tech):
+        n_user.likes.connect(tech)
+        messages.success(request, f'¡Te gusta {tech.name}!')
+    else:
+        messages.info(request, f'Ya te gusta {tech.name}.')
+
+    next_url = request.GET.get('next') or request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('technology_detail', slug=slug)
+
+
+@login_required
+def unlike_technology(request, slug):
+    try:
+        tech = Technology.nodes.get(slug=slug)
+    except Technology.DoesNotExist:
+        messages.error(request, 'Technology not found.')
+        return redirect('technology_list')
+
+    n_user = User.nodes.get_or_none(username=request.user.username)
+    if n_user and n_user.likes.is_connected(tech):
+        n_user.likes.disconnect(tech)
+        messages.success(request, f'Ya no te gusta {tech.name}.')
+    else:
+        messages.info(request, f'No te gustaba {tech.name}.')
+
+    next_url = request.GET.get('next') or request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
+    return redirect('technology_detail', slug=slug)
+
+
+@login_required
+def recommendations_view(request):
+    username = request.user.username
+
+    # Permitir recálculo manual en caliente mediante POST
+    if request.method == 'POST' and 'recompute' in request.POST:
+        try:
+            recommendation_service.recompute_all()
+            messages.success(request, '¡Recomendaciones de Neo4j GDS recalculadas con éxito!')
+        except recommendation_service.GDSNotAvailableError as e:
+            messages.error(request, str(e))
+        except Exception as e:
+            messages.error(request, f'Error al recalcular con GDS: {str(e)}')
+        return redirect('recommendations')
+
+    # Obtener recomendaciones colaborativas basadas en similitud (GDS)
+    recommendations = recommendation_service.get_recommendations(username, limit=10)
+
+    return render(request, 'graph/recommendations.html', {
+        'recommendations': recommendations,
+    })
+
+
+@login_required
+def favorite_technologies_view(request):
+    n_user = User.nodes.get_or_none(username=request.user.username)
+    liked_techs = []
+    if n_user:
+        liked_techs = n_user.likes.order_by('name').all()
+    return render(request, 'graph/favorite_technologies.html', {
+        'technologies': liked_techs
+    })

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}My Favorites — TechGraph{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Mis Tecnologías Favoritas</h1>
+    <p>Lista de tecnologías del catálogo que has marcado con Like</p>
+  </div>
+  <a href="{% url 'technology_list' %}" class="btn btn-ghost btn-sm">Explorar catálogo →</a>
+</div>
+
+<div class="section-title">Tus favoritas ({{ technologies|length }})</div>
+{% if technologies %}
+  <div class="grid grid-3">
+    {% for tech in technologies %}
+      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="margin-bottom:0.75rem">
+            <span class="tag tag-{{ tech.tech_type }}" style="margin-bottom:0.4rem; display:inline-block">{{ tech.tech_type }}</span>
+            <div class="card-title"><a href="{% url 'technology_detail' tech.slug %}" style="text-decoration:none; color:inherit">{{ tech.name }}</a></div>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1.25rem">
+            {{ tech.description|default:"Sin descripción disponible."|truncatechars:120 }}
+          </p>
+        </div>
+        
+        <div style="border-top:1px solid var(--border); padding-top:0.75rem; display:flex; justify-content:flex-end">
+          <a href="{% url 'unlike_technology' tech.slug %}?next={% url 'favorite_technologies' %}" class="btn btn-ghost btn-sm" style="border-color:var(--danger); color:var(--danger)">
+            ♥ Liked
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card" style="text-align:center; padding:3.5rem 1.5rem; max-width:680px; margin:0 auto">
+    <p style="color:var(--text-dim); margin-bottom:1rem; font-weight:700">Aún no has marcado ninguna tecnología con Like.</p>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.5rem; line-height:1.5">
+      Explora nuestro catálogo completo de lenguajes, frameworks, bases de datos y herramientas, y haz clic en el botón de "Like" para agregarlos a tu perfil.
+    </p>
+    <a href="{% url 'technology_list' %}" class="btn btn-primary btn-sm">Explorar tecnologías</a>
+  </div>
+{% endif %}
+{% endblock %}

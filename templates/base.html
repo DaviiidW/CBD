@@ -20,6 +20,10 @@
     <a href="{% url 'project_list' %}"    {% if 'project' in request.resolver_match.url_name %}class="active"{% endif %}>Projects</a>
     <a href="{% url 'find_path' %}"       {% if request.resolver_match.url_name == 'find_path' %}class="active"{% endif %}>Find Path</a>
     <a href="{% url 'filter_projects' %}" {% if request.resolver_match.url_name == 'filter_projects' %}class="active"{% endif %}>Filter</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'recommendations' %}" {% if request.resolver_match.url_name == 'recommendations' %}class="active"{% endif %}>Recommendations</a>
+      <a href="{% url 'favorite_technologies' %}" {% if request.resolver_match.url_name == 'favorite_technologies' %}class="active"{% endif %}>Favorites</a>
+    {% endif %}
   </div>
   <div class="nav-auth">
     {% if user.is_authenticated %}

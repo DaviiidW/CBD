@@ -1,7 +1,7 @@
 from neomodel import (
     StructuredNode, StructuredRel,
     StringProperty, DateTimeProperty,
-    IntegerProperty, BooleanProperty,
+    IntegerProperty, BooleanProperty, FloatProperty,
     RelationshipTo, RelationshipFrom, Relationship,
     UniqueIdProperty,
 )
@@ -28,6 +28,10 @@ class AlternativeToRel(StructuredRel):
 
 class ExtendsRel(StructuredRel):
     pass
+
+
+class SimilarToRel(StructuredRel):
+    score = FloatProperty(default=0.0)
 
 
 # ── Node models ───────────────────────────────────────────────────────────────
@@ -102,3 +106,13 @@ class TechnologyVersion(StructuredNode):
 
 class Tag(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
+
+
+class User(StructuredNode):
+    uid = UniqueIdProperty()
+    username = StringProperty(unique_index=True, required=True)
+    email = StringProperty(default='')
+    created_at = DateTimeProperty(default=datetime.utcnow)
+
+    likes = RelationshipTo('Technology', 'LIKES')
+    similar_to = Relationship('User', 'SIMILAR_TO', model=SimilarToRel)

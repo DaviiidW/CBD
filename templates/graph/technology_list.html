@@ -15,12 +15,22 @@
   </div>
 </div>
 
+<form method="GET" action="{% url 'technology_list' %}" class="flex gap-xs flex-wrap items-center"
+  style="margin-bottom: 2rem; width: 100%; max-width: 500px;">
+  <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre..."
+    style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.9rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); min-width: 200px; outline: none;">
+  <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Buscar</button>
+  {% if q %}
+  <a href="{% url 'technology_list' %}" class="btn btn-ghost" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Limpiar</a>
+  {% endif %}
+</form>
+
 <div style="display:grid; grid-template-columns:1fr 340px; gap:2.5rem; align-items:start">
 
   <div>
     <div class="section-title">Todas las tecnologías</div>
     <div class="grid grid-2">
-      {% for tech in technologies %}
+      {% for tech in page_obj %}
         <a href="{% url 'technology_detail' tech.slug %}" style="text-decoration:none">
           <div class="card">
             <span class="tag tag-{{ tech.tech_type }}">{{ tech.tech_type }}</span>
@@ -36,6 +46,20 @@
         <p class="muted">No hay tecnologías registradas.</p>
       {% endfor %}
     </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="pagination flex items-center justify-center gap-sm" style="margin-top: 2.5rem; margin-bottom: 1.5rem;">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-ghost">Anterior</a>
+      {% endif %}
+      <span style="font-size: 0.9rem; color: var(--text-dim);">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      </span>
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}" class="btn btn-ghost">Siguiente</a>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 
   <div>

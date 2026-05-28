@@ -17,14 +17,27 @@ def global_graph(request):
 
 
 def technology_list(request):
-    technologies = Technology.nodes.order_by('name').all()
+    from django.core.paginator import Paginator
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        technologies_query = Technology.nodes.filter(name__icontains=q).order_by('name')
+    else:
+        technologies_query = Technology.nodes.order_by('name')
+
+    paginator = Paginator(technologies_query, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     top = queries.get_most_connected_technologies(10)
     cooccurrence = queries.get_technology_cooccurrence()
+
     return render(request, 'graph/technology_list.html', {
-        'technologies': technologies,
+        'page_obj': page_obj,
         'top_technologies': top,
         'cooccurrence': cooccurrence,
         'tech_types': TECH_TYPES,
+        'q': q,
     })
 
 

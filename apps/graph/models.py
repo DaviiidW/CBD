@@ -1,6 +1,7 @@
 from neomodel import (
     StructuredNode, StructuredRel,
     StringProperty, DateTimeProperty,
+    IntegerProperty, BooleanProperty,
     RelationshipTo, RelationshipFrom, Relationship,
     UniqueIdProperty,
 )
@@ -42,6 +43,11 @@ class Technology(StructuredNode):
     description = StringProperty(default='')
     url = StringProperty(default='')
     tech_type = StringProperty(choices={t: t for t in TECH_TYPES}, default='other')
+    github_url = StringProperty(default='')
+    documentation_url = StringProperty(default='')
+    license = StringProperty(default='Unknown')
+    release_year = IntegerProperty()
+    is_open_source = BooleanProperty(default=True)
     created_at = DateTimeProperty(default=datetime.utcnow)
 
     compatible_with = Relationship('Technology', 'COMPATIBLE_WITH', model=CompatibleWithRel)
@@ -50,6 +56,8 @@ class Technology(StructuredNode):
     extends = RelationshipTo('Technology', 'EXTENDS', model=ExtendsRel)
     used_by = RelationshipFrom('Project', 'USES', model=UsesRel)
     extended_by = RelationshipFrom('Technology', 'EXTENDS', model=ExtendsRel)
+    has_version = RelationshipTo('TechnologyVersion', 'HAS_VERSION')
+    tagged_as = RelationshipTo('Tag', 'TAGGED_AS')
 
     def __str__(self):
         return self.name
@@ -72,6 +80,7 @@ class Project(StructuredNode):
     created_at = DateTimeProperty(default=datetime.utcnow)
 
     uses = RelationshipTo('Technology', 'USES', model=UsesRel)
+    uses_version = RelationshipTo('TechnologyVersion', 'USES_VERSION')
 
     def __str__(self):
         return self.title
@@ -82,3 +91,14 @@ class Project(StructuredNode):
             'description': self.description, 'url': self.url,
             'project_type': self.project_type, 'author_username': self.author_username,
         }
+
+
+class TechnologyVersion(StructuredNode):
+    uid = UniqueIdProperty()
+    name = StringProperty(required=True)
+    version = StringProperty(required=True)
+    release_date = DateTimeProperty()
+
+
+class Tag(StructuredNode):
+    name = StringProperty(unique_index=True, required=True)

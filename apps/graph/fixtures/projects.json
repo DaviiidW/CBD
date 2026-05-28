@@ -1,0 +1,446 @@
+[
+  {
+    "title": "Visual Studio Code",
+    "slug": "microsoft-vscode",
+    "author": "microsoft",
+    "description": "Editor de código fuente multiplataforma y extensible desarrollado por Microsoft.",
+    "url": "https://github.com/microsoft/vscode",
+    "project_type": "desktop",
+    "created_at": "2015-09-03T20:23:38Z",
+    "language": "TypeScript",
+    "topics": [
+      "editor",
+      "typescript",
+      "electron",
+      "vscode",
+      "development"
+    ]
+  },
+  {
+    "title": "React",
+    "slug": "facebook-react",
+    "author": "facebook",
+    "description": "La librería de JavaScript para el diseño declarativo y modular de interfaces de usuario.",
+    "url": "https://github.com/facebook/react",
+    "project_type": "library",
+    "created_at": "2013-05-24T16:15:54Z",
+    "language": "JavaScript",
+    "topics": [
+      "react",
+      "javascript",
+      "frontend",
+      "ui",
+      "library"
+    ]
+  },
+  {
+    "title": "Vue",
+    "slug": "vuejs-core",
+    "author": "vuejs",
+    "description": "Framework progresivo, rápido e intuitivo de Javascript para el frontend de páginas SPA.",
+    "url": "https://github.com/vuejs/core",
+    "project_type": "framework",
+    "created_at": "2013-12-10T14:12:45Z",
+    "language": "TypeScript",
+    "topics": [
+      "vue",
+      "javascript",
+      "frontend",
+      "framework",
+      "typescript"
+    ]
+  },
+  {
+    "title": "Kubernetes",
+    "slug": "kubernetes-kubernetes",
+    "author": "kubernetes",
+    "description": "Sistema de orquestación y automatización industrial para despliegue de contenedores distribuidos.",
+    "url": "https://github.com/kubernetes/kubernetes",
+    "project_type": "other",
+    "created_at": "2014-06-06T15:23:44Z",
+    "language": "Go",
+    "topics": [
+      "kubernetes",
+      "go",
+      "containers",
+      "docker",
+      "orchestration",
+      "cloud-native"
+    ]
+  },
+  {
+    "title": "Docker",
+    "slug": "docker-docker-ce",
+    "author": "docker",
+    "description": "El motor líder de virtualización ligera basada en contenedores de aplicaciones.",
+    "url": "https://github.com/docker/docker-ce",
+    "project_type": "cli",
+    "created_at": "2013-03-18T10:00:23Z",
+    "language": "Go",
+    "topics": [
+      "docker",
+      "go",
+      "containers",
+      "virtualization",
+      "cli"
+    ]
+  },
+  {
+    "title": "Django",
+    "slug": "django-django",
+    "author": "django",
+    "description": "El framework web de backend de Python para perfeccionistas con fechas de entrega ajustadas.",
+    "url": "https://github.com/django/django",
+    "project_type": "framework",
+    "created_at": "2005-07-16T12:00:00Z",
+    "language": "Python",
+    "topics": [
+      "django",
+      "python",
+      "web",
+      "framework",
+      "mvc",
+      "sql"
+    ]
+  },
+  {
+    "title": "FastAPI",
+    "slug": "tiangolo-fastapi",
+    "author": "tiangolo",
+    "description": "Framework de alto rendimiento, ágil y de código abierto para diseñar APIs en Python 3.8+.",
+    "url": "https://github.com/tiangolo/fastapi",
+    "project_type": "api",
+    "created_at": "2018-12-08T08:22:11Z",
+    "language": "Python",
+    "topics": [
+      "fastapi",
+      "python",
+      "api",
+      "pydantic",
+      "openapi",
+      "rest"
+    ]
+  },
+  {
+    "title": "Terraform",
+    "slug": "hashicorp-terraform",
+    "author": "hashicorp",
+    "description": "Herramienta declarativa líder para escribir, previsualizar e implementar Infraestructura como Código.",
+    "url": "https://github.com/hashicorp/terraform",
+    "project_type": "cli",
+    "created_at": "2014-05-02T19:30:10Z",
+    "language": "Go",
+    "topics": [
+      "terraform",
+      "go",
+      "iac",
+      "cloud",
+      "infrastructure",
+      "aws"
+    ]
+  },
+  {
+    "title": "Home Assistant",
+    "slug": "home-assistant-core",
+    "author": "home-assistant",
+    "description": "Sistema de domótica y automatización del hogar que prioriza el control local y la privacidad.",
+    "url": "https://github.com/home-assistant/core",
+    "project_type": "web app",
+    "created_at": "2013-09-17T07:29:48Z",
+    "language": "Python",
+    "topics": [
+      "home-assistant",
+      "python",
+      "iot",
+      "smart-home",
+      "automation",
+      "raspberry-pi"
+    ]
+  },
+  {
+    "title": "Linux Kernel",
+    "slug": "torvalds-linux",
+    "author": "torvalds",
+    "description": "El núcleo de sistema operativo Unix desarrollado por Linus Torvalds y miles de colaboradores.",
+    "url": "https://github.com/torvalds/linux",
+    "project_type": "other",
+    "created_at": "1991-09-17T12:00:00Z",
+    "language": "C",
+    "topics": [
+      "linux",
+      "kernel",
+      "os",
+      "c",
+      "unix",
+      "development"
+    ]
+  },
+  {
+    "title": "NestJS",
+    "slug": "nestjs-nest",
+    "author": "nestjs",
+    "description": "Framework backend de Node.js robusto diseñado para construir microservicios modulares tipados.",
+    "url": "https://github.com/nestjs/nest",
+    "project_type": "framework",
+    "created_at": "2017-06-25T11:44:02Z",
+    "language": "TypeScript",
+    "topics": [
+      "nestjs",
+      "typescript",
+      "nodejs",
+      "framework",
+      "express",
+      "microservices"
+    ]
+  },
+  {
+    "title": "Supabase",
+    "slug": "supabase-supabase",
+    "author": "supabase",
+    "description": "La plataforma alternativa de código abierto a Firebase construida sobre PostgreSQL.",
+    "url": "https://github.com/supabase/supabase",
+    "project_type": "web app",
+    "created_at": "2020-05-28T09:12:01Z",
+    "language": "TypeScript",
+    "topics": [
+      "supabase",
+      "postgresql",
+      "firebase",
+      "auth",
+      "typescript",
+      "realtime"
+    ]
+  },
+  {
+    "title": "Next.js",
+    "slug": "vercel-nextjs",
+    "author": "vercel",
+    "description": "El framework premium de React optimizado con renderizado en el servidor y hosting serverless.",
+    "url": "https://github.com/vercel/next.js",
+    "project_type": "framework",
+    "created_at": "2016-10-24T05:00:23Z",
+    "language": "JavaScript",
+    "topics": [
+      "nextjs",
+      "react",
+      "frontend",
+      "ssr",
+      "framework",
+      "typescript"
+    ]
+  },
+  {
+    "title": "Vite",
+    "slug": "vitejs-vite",
+    "author": "vitejs",
+    "description": "Herramienta de compilación frontend y servidor de desarrollo instantáneo mediante ESM nativo.",
+    "url": "https://github.com/vitejs/vite",
+    "project_type": "tool",
+    "created_at": "2020-04-20T10:14:02Z",
+    "language": "TypeScript",
+    "topics": [
+      "vite",
+      "frontend",
+      "bundler",
+      "typescript",
+      "vue",
+      "react"
+    ]
+  },
+  {
+    "title": "PyTorch",
+    "slug": "pytorch-pytorch",
+    "author": "pytorch",
+    "description": "Estructura ágil y robusta de tensores para aprendizaje profundo y redes neuronales artificiales.",
+    "url": "https://github.com/pytorch/pytorch",
+    "project_type": "library",
+    "created_at": "2016-08-13T12:00:22Z",
+    "language": "C++",
+    "topics": [
+      "pytorch",
+      "python",
+      "machine-learning",
+      "deep-learning",
+      "gpu"
+    ]
+  },
+  {
+    "title": "Tailwind CSS",
+    "slug": "tailwindlabs-tailwindcss",
+    "author": "tailwindlabs",
+    "description": "El framework CSS de utilidad líder enfocado en acelerar la maquetación visual moderna.",
+    "url": "https://github.com/tailwindlabs/tailwindcss",
+    "project_type": "library",
+    "created_at": "2017-10-31T15:23:22Z",
+    "language": "HTML",
+    "topics": [
+      "tailwind",
+      "css",
+      "design",
+      "frontend",
+      "responsive"
+    ]
+  },
+  {
+    "title": "Elasticsearch",
+    "slug": "elastic-elasticsearch",
+    "author": "elastic",
+    "description": "Motor distribuido RESTful de búsqueda e indexación analítica de información masiva.",
+    "url": "https://github.com/elastic/elasticsearch",
+    "project_type": "other",
+    "created_at": "2010-02-08T13:42:01Z",
+    "language": "Java",
+    "topics": [
+      "elasticsearch",
+      "java",
+      "search-engine",
+      "nosql",
+      "analytics",
+      "elk"
+    ]
+  },
+  {
+    "name": "Redis",
+    "title": "Redis",
+    "slug": "redis-redis",
+    "author": "redis",
+    "description": "Almacén masivo de datos en memoria utilizado como base de datos, caché y mensajería instantánea.",
+    "url": "https://github.com/redis/redis",
+    "project_type": "other",
+    "created_at": "2009-03-21T09:12:02Z",
+    "language": "C",
+    "topics": [
+      "redis",
+      "c",
+      "nosql",
+      "cache",
+      "database",
+      "key-value"
+    ]
+  },
+  {
+    "title": "Svelte",
+    "slug": "sveltejs-svelte",
+    "author": "sveltejs",
+    "description": "Biblioteca compilada revolucionaria que genera transiciones dinámicas directas sin DOM virtual.",
+    "url": "https://github.com/sveltejs/svelte",
+    "project_type": "framework",
+    "created_at": "2016-11-15T09:12:00Z",
+    "language": "TypeScript",
+    "topics": [
+      "svelte",
+      "javascript",
+      "frontend",
+      "compiler"
+    ]
+  },
+  {
+    "title": "Neo4j Community Edition",
+    "slug": "neo4j-neo4j",
+    "author": "neo4j",
+    "description": "La versión de código abierto de la base de datos de grafos nativa número uno del mundo.",
+    "url": "https://github.com/neo4j/neo4j",
+    "project_type": "other",
+    "created_at": "2009-08-11T12:00:00Z",
+    "language": "Java",
+    "topics": [
+      "neo4j",
+      "graph-database",
+      "database",
+      "java",
+      "nosql",
+      "cypher"
+    ]
+  },
+  {
+    "title": "Ansible Core",
+    "slug": "ansible-ansible",
+    "author": "ansible",
+    "description": "El motor principal de aprovisionamiento, despliegue continuo y administración IT.",
+    "url": "https://github.com/ansible/ansible",
+    "project_type": "cli",
+    "created_at": "2012-03-06T15:00:00Z",
+    "language": "Python",
+    "topics": [
+      "ansible",
+      "python",
+      "automation",
+      "devops",
+      "deployment",
+      "ssh"
+    ]
+  },
+  {
+    "title": "Celery",
+    "slug": "celery-celery",
+    "author": "celery",
+    "description": "Cola de tareas en segundo plano distribuida basada en paso de mensajes asíncronos.",
+    "url": "https://github.com/celery/celery",
+    "project_type": "library",
+    "created_at": "2009-06-25T13:22:11Z",
+    "language": "Python",
+    "topics": [
+      "celery",
+      "python",
+      "task-queue",
+      "redis",
+      "rabbitmq",
+      "async"
+    ]
+  },
+  {
+    "title": "Prisma ORM",
+    "slug": "prisma-prisma",
+    "author": "prisma",
+    "description": "ORM moderno para Node.js y TypeScript que acelera y asegura las consultas a bases de datos relacionales.",
+    "url": "https://github.com/prisma/prisma",
+    "project_type": "library",
+    "created_at": "2019-02-12T10:00:00Z",
+    "language": "TypeScript",
+    "topics": [
+      "prisma",
+      "orm",
+      "database",
+      "typescript",
+      "postgresql",
+      "mysql"
+    ]
+  },
+  {
+    "title": "Hugging Face Transformers",
+    "slug": "huggingface-transformers",
+    "author": "huggingface",
+    "description": "Los modelos de inteligencia artificial y NLP del estado del arte para PyTorch, TensorFlow y JAX.",
+    "url": "https://github.com/huggingface/transformers",
+    "project_type": "library",
+    "created_at": "2018-10-29T13:44:00Z",
+    "language": "Python",
+    "topics": [
+      "transformers",
+      "pytorch",
+      "tensorflow",
+      "deep-learning",
+      "ai",
+      "nlp"
+    ]
+  },
+  {
+    "title": "Flutter SDK",
+    "slug": "flutter-flutter",
+    "author": "flutter",
+    "description": "El SDK de Google para diseñar hermosas interfaces nativas multiplataforma desde un único código.",
+    "url": "https://github.com/flutter/flutter",
+    "project_type": "framework",
+    "created_at": "2015-03-06T12:00:00Z",
+    "language": "Dart",
+    "topics": [
+      "flutter",
+      "dart",
+      "sdk",
+      "mobile",
+      "ios",
+      "android",
+      "cross-platform"
+    ]
+  }
+]

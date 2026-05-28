@@ -11,6 +11,8 @@ const TYPE_COLORS = {
   platform:  { bg: '#0a3040', border: '#06b6d4', font: '#67e8f9' },
   other:     { bg: '#1e2740', border: '#64748b', font: '#94a3b8' },
   project:   { bg: '#3d1a00', border: '#f97316', font: '#fdba74' },
+  tag:       { bg: '#3b123d', border: '#d946ef', font: '#f5d0fe' },
+  version:   { bg: '#063c21', border: '#22c55e', font: '#86efac' },
 };
 
 const REL_COLORS = {
@@ -19,6 +21,9 @@ const REL_COLORS = {
   DEPENDS_ON:      '#3b82f655',
   ALTERNATIVE_TO:  '#f59e0b55',
   EXTENDS:         '#8b5cf655',
+  HAS_VERSION:     '#22c55e44',
+  TAGGED_AS:       '#d946ef44',
+  USES_VERSION:    '#10b98144',
   compatible_with: '#10b98155',
   depends_on:      '#3b82f655',
   alternative_to:  '#f59e0b55',
@@ -41,7 +46,7 @@ function buildNode(n) {
     },
     font: { color: n.main ? '#fff' : colors.font, size: n.main ? 14 : 12 },
     size: n.main ? 22 : 14,
-    shape: n.type === 'project' ? 'diamond' : 'dot',
+    shape: n.type === 'project' ? 'diamond' : (n.type === 'tag' ? 'box' : 'dot'),
     borderWidth: n.main ? 2 : 1,
   };
 }

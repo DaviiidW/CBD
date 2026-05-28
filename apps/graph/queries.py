@@ -2,31 +2,46 @@ from neomodel import db
 
 
 def get_compatible_technologies(tech_slug: str) -> list[dict]:
+    """
+    Retorna las tecnologías relacionadas de forma directa: compatibles (con sus notas de relación),
+    dependencias y extensiones (tanto las que extiende como las que es extendida).
+    """
     results, _ = db.cypher_query(
         """
         MATCH (t:Technology {slug: $slug})
-        OPTIONAL MATCH (t)-[:COMPATIBLE_WITH]-(c:Technology)
+        OPTIONAL MATCH (t)-[r_comp:COMPATIBLE_WITH]-(c:Technology)
         OPTIONAL MATCH (t)-[:DEPENDS_ON]->(d:Technology)
+        OPTIONAL MATCH (t)-[:EXTENDS]->(ext:Technology)
         OPTIONAL MATCH (t)<-[:EXTENDS]-(e:Technology)
         WITH t,
-             collect(DISTINCT {node: c, rel: 'compatible_with'}) +
-             collect(DISTINCT {node: d, rel: 'depends_on'}) +
-             collect(DISTINCT {node: e, rel: 'extended_by'}) AS related
+             collect(DISTINCT {node: c, rel: 'compatible_with', notes: r_comp.notes}) +
+             collect(DISTINCT {node: d, rel: 'depends_on', notes: ''}) +
+             collect(DISTINCT {node: ext, rel: 'extends', notes: ''}) +
+             collect(DISTINCT {node: e, rel: 'extended_by', notes: ''}) AS related
         UNWIND related AS r
         WITH r WHERE r.node IS NOT NULL
         RETURN r.node.name AS name, r.node.slug AS slug,
-               r.node.tech_type AS tech_type, r.rel AS relationship
+               r.node.tech_type AS tech_type, r.rel AS relationship, COALESCE(r.notes, '') AS notes
         ORDER BY name
         """,
         {'slug': tech_slug},
     )
     return [
-        {'name': r[0], 'slug': r[1], 'tech_type': r[2], 'relationship': r[3]}
+        {
+            'name': r[0],
+            'slug': r[1],
+            'tech_type': r[2],
+            'relationship': r[3],
+            'notes': r[4]
+        }
         for r in results
     ]
 
 
 def get_projects_by_technologies(tech_slugs: list[str]) -> list[dict]:
+    """
+    Busca proyectos que usen todas las tecnologías especificadas.
+    """
     results, _ = db.cypher_query(
         """
         MATCH (p:Project)-[:USES]->(t:Technology)
@@ -47,32 +62,65 @@ def get_projects_by_technologies(tech_slugs: list[str]) -> list[dict]:
 
 
 def get_alternative_technologies(tech_slug: str) -> list[dict]:
+    """
+    Retorna tecnologías alternativas asociando año de lanzamiento y licencia para comparación.
+    """
     results, _ = db.cypher_query(
         """
         MATCH (t:Technology {slug: $slug})-[:ALTERNATIVE_TO]-(alt:Technology)
         RETURN alt.name AS name, alt.slug AS slug, alt.tech_type AS tech_type,
-               alt.description AS description
+               alt.description AS description, COALESCE(alt.release_year, 0) AS release_year,
+               COALESCE(alt.license, 'Unknown') AS license
         ORDER BY name
         """,
         {'slug': tech_slug},
     )
     return [
-        {'name': r[0], 'slug': r[1], 'tech_type': r[2], 'description': r[3]}
+        {
+            'name': r[0],
+            'slug': r[1],
+            'tech_type': r[2],
+            'description': r[3],
+            'release_year': r[4] if r[4] != 0 else None,
+            'license': r[5]
+        }
         for r in results
     ]
 
 
 def find_path_between_technologies(slug_a: str, slug_b: str) -> list[dict]:
+    """
+    Busca el camino más corto entre dos tecnologías, soportando de forma segura
+    los nuevos nodos de tipo 'Tag' y 'TechnologyVersion'.
+    """
     results, _ = db.cypher_query(
         """
         MATCH (a:Technology {slug: $slug_a}), (b:Technology {slug: $slug_b})
         MATCH path = shortestPath((a)-[*..6]-(b))
         UNWIND nodes(path) AS n
         RETURN 
-            CASE WHEN n:Technology THEN n.name ELSE n.title END AS name, 
-            n.slug AS slug, 
-            CASE WHEN n:Technology THEN n.tech_type ELSE n.project_type END AS subtype,
-            CASE WHEN n:Technology THEN 'technology' ELSE 'project' END AS type
+            CASE 
+                WHEN n:Technology THEN n.name 
+                WHEN n:Project THEN n.title 
+                WHEN n:TechnologyVersion THEN n.name 
+                WHEN n:Tag THEN n.name 
+                ELSE 'Desconocido'
+            END AS name, 
+            COALESCE(n.slug, n.name) AS slug, 
+            CASE 
+                WHEN n:Technology THEN n.tech_type 
+                WHEN n:Project THEN n.project_type 
+                WHEN n:TechnologyVersion THEN 'version' 
+                WHEN n:Tag THEN 'tag'
+                ELSE 'other'
+            END AS subtype,
+            CASE 
+                WHEN n:Technology THEN 'technology' 
+                WHEN n:Project THEN 'project' 
+                WHEN n:TechnologyVersion THEN 'version' 
+                WHEN n:Tag THEN 'tag'
+                ELSE 'other' 
+            END AS type
         """,
         {'slug_a': slug_a, 'slug_b': slug_b},
     )
@@ -80,6 +128,9 @@ def find_path_between_technologies(slug_a: str, slug_b: str) -> list[dict]:
 
 
 def get_technology_cooccurrence() -> list[dict]:
+    """
+    Encuentra las tecnologías que más se utilizan juntas en los proyectos.
+    """
     results, _ = db.cypher_query(
         """
         MATCH (p:Project)-[:USES]->(t1:Technology),
@@ -99,23 +150,44 @@ def get_technology_cooccurrence() -> list[dict]:
 
 
 def get_full_graph_data() -> dict:
+    """
+    Exporta el grafo completo incluyendo nodos de tecnologías, proyectos, tags y versiones,
+    junto con todas sus relaciones cruzadas, de forma uniforme.
+    """
     nodes_result, _ = db.cypher_query(
         """
         MATCH (n)
-        WHERE n:Technology OR n:Project
+        WHERE n:Technology OR n:Project OR n:TechnologyVersion OR n:Tag
         RETURN
-            CASE WHEN n:Technology THEN 'technology' ELSE 'project' END AS label,
-            n.uid AS uid,
-            CASE WHEN n:Technology THEN n.name ELSE n.title END AS name,
-            CASE WHEN n:Technology THEN n.tech_type ELSE n.project_type END AS subtype,
-            n.slug AS slug
+            CASE 
+                WHEN n:Technology THEN 'technology' 
+                WHEN n:Project THEN 'project' 
+                WHEN n:TechnologyVersion THEN 'version' 
+                WHEN n:Tag THEN 'tag' 
+            END AS label,
+            COALESCE(n.uid, n.name) AS uid,
+            CASE 
+                WHEN n:Technology THEN n.name 
+                WHEN n:Project THEN n.title 
+                WHEN n:TechnologyVersion THEN n.name 
+                WHEN n:Tag THEN n.name 
+            END AS name,
+            CASE 
+                WHEN n:Technology THEN n.tech_type 
+                WHEN n:Project THEN n.project_type 
+                WHEN n:TechnologyVersion THEN 'version' 
+                WHEN n:Tag THEN 'tag'
+                ELSE ''
+            END AS subtype,
+            COALESCE(n.slug, n.name) AS slug
         """
     )
     edges_result, _ = db.cypher_query(
         """
         MATCH (a)-[r]->(b)
-        WHERE (a:Technology OR a:Project) AND (b:Technology OR b:Project)
-        RETURN a.uid AS source, b.uid AS target, type(r) AS rel_type
+        WHERE (a:Technology OR a:Project OR a:TechnologyVersion OR a:Tag) 
+          AND (b:Technology OR b:Project OR b:TechnologyVersion OR b:Tag)
+        RETURN COALESCE(a.uid, a.name) AS source, COALESCE(b.uid, b.name) AS target, type(r) AS rel_type
         """
     )
     nodes = [
@@ -130,6 +202,9 @@ def get_full_graph_data() -> dict:
 
 
 def get_most_connected_technologies(limit: int = 10) -> list[dict]:
+    """
+    Identifica las tecnologías con más conexiones totales en el grafo.
+    """
     results, _ = db.cypher_query(
         """
         MATCH (t:Technology)

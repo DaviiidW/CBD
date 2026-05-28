@@ -10,10 +10,14 @@ def home(request):
     recent_projects = Project.nodes.order_by('title').all()[:6]
     top_techs = queries.get_most_connected_technologies(6)
     cooccurrence = queries.get_technology_cooccurrence()[:5]
+    stats = queries.get_graph_stats()
     return render(request, 'core/home.html', {
         'recent_projects': recent_projects,
         'top_techs': top_techs,
         'cooccurrence': cooccurrence,
+        'total_techs': stats['total_techs'],
+        'total_projects': stats['total_projects'],
+        'total_connections': stats['total_connections'],
     })
 
 

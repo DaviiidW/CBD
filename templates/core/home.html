@@ -17,15 +17,15 @@
 
 <div class="grid grid-3 section" style="grid-template-columns: repeat(auto-fill, minmax(160px,1fr))">
   <div class="stat-box">
-    <span class="num">{{ total_techs }}</span>
+    <span class="num">{{ top_techs|length }}+</span>
     <span class="lbl">Technologies</span>
   </div>
   <div class="stat-box">
-    <span class="num">{{ total_projects }}</span>
+    <span class="num">{{ recent_projects|length }}+</span>
     <span class="lbl">Projects</span>
   </div>
   <div class="stat-box">
-    <span class="num">{{ total_connections }}</span>
+    <span class="num">{{ cooccurrence|length }}+</span>
     <span class="lbl">Connections</span>
   </div>
 </div>

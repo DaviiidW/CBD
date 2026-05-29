@@ -1,58 +1,99 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}TechGraph{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=1.7">
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   {% block extra_head %}{% endblock %}
 </head>
+
 <body class="layout">
 
-<nav>
-  <a href="{% url 'home' %}" class="nav-brand">TechGraph</a>
-  <div class="nav-links">
-    <a href="{% url 'home' %}"            {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Home</a>
-    <a href="{% url 'global_graph' %}"    {% if request.resolver_match.url_name == 'global_graph' %}class="active"{% endif %}>Graph</a>
-    <a href="{% url 'technology_list' %}" {% if 'technology' in request.resolver_match.url_name %}class="active"{% endif %}>Technologies</a>
-    <a href="{% url 'project_list' %}"    {% if 'project' in request.resolver_match.url_name %}class="active"{% endif %}>Projects</a>
-    <a href="{% url 'find_path' %}"       {% if request.resolver_match.url_name == 'find_path' %}class="active"{% endif %}>Find Path</a>
-    <a href="{% url 'filter_projects' %}" {% if request.resolver_match.url_name == 'filter_projects' %}class="active"{% endif %}>Filter</a>
-    {% if user.is_authenticated %}
-      <a href="{% url 'recommendations' %}" {% if request.resolver_match.url_name == 'recommendations' %}class="active"{% endif %}>Recommendations</a>
-      <a href="{% url 'favorite_technologies' %}" {% if request.resolver_match.url_name == 'favorite_technologies' %}class="active"{% endif %}>Favorites</a>
-    {% endif %}
-  </div>
-  <div class="nav-auth">
-    {% if user.is_authenticated %}
-      <span class="muted mono" style="font-size:0.78rem">{{ user.username }}</span>
-      <a href="{% url 'add_technology' %}" class="btn btn-ghost btn-sm">+ Technology</a>
-      <a href="{% url 'add_project' %}"    class="btn btn-primary btn-sm">+ Project</a>
-      <form action="{% url 'logout' %}" method="post" style="display:inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-ghost btn-sm">Logout</button>
-      </form>
-    {% else %}
-      <a href="{% url 'login' %}"    class="btn btn-ghost btn-sm">Login</a>
-      <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Register</a>
-    {% endif %}
-  </div>
-</nav>
+  <nav>
+    <a href="{% url 'home' %}" class="nav-brand">TechGraph</a>
+    <div class="nav-links">
+      <!-- Enlace Solitario: Inicio -->
+      <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Inicio</a>
+      
+      <!-- Grupo 1: Catálogos -->
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-trigger {% if request.resolver_match.url_name == 'technology_list' or request.resolver_match.url_name == 'project_list' %}active{% endif %}">
+          Catálogos ▾
+        </button>
+        <div class="nav-dropdown-content">
+          <a href="{% url 'technology_list' %}">Tecnologías</a>
+          <a href="{% url 'project_list' %}">Proyectos</a>
+        </div>
+      </div>
+      
+      <!-- Grupo 2: Grafo -->
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-trigger {% if request.resolver_match.url_name in 'global_graph,find_path,filter_projects' %}active{% endif %}">
+          Grafo ▾
+        </button>
+        <div class="nav-dropdown-content">
+          <a href="{% url 'global_graph' %}">Grafo completo</a>
+          <a href="{% url 'find_path' %}">Buscar camino</a>
+          <a href="{% url 'filter_projects' %}">Filtrar stack</a>
+        </div>
+      </div>
 
-<main class="main">
-  {% if messages %}
+      <!-- Grupo 3: Añadir (Solo autenticados) -->
+      {% if user.is_authenticated %}
+        <div class="nav-dropdown">
+          <button class="nav-dropdown-trigger {% if request.resolver_match.url_name in 'add_technology,add_project' %}active{% endif %}" style="color: var(--accent3);">
+            + Añadir ▾
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="{% url 'add_technology' %}">+ Nueva Tecnología</a>
+            <a href="{% url 'add_project' %}">+ Nuevo Proyecto</a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="nav-auth">
+      {% if user.is_authenticated %}
+        <!-- Grupo 4: Mi Cuenta -->
+        <div class="nav-dropdown nav-dropdown-right">
+          <button class="btn btn-ghost btn-sm" style="font-weight: 700;">
+            👤 {{ user.username }} ▾
+          </button>
+          <div class="nav-dropdown-content">
+            <a href="{% url 'favorite_technologies' %}">Mis Favoritas</a>
+            <a href="{% url 'recommendations' %}">Recomendaciones</a>
+            <div style="height: 1px; background: var(--border); margin: 0.4rem 0;"></div>
+            <form action="{% url 'logout' %}" method="post" style="display:block; margin:0;">
+              {% csrf_token %}
+              <button type="submit" style="width:100%;">Cerrar sesión</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <!-- Standalone para usuarios invitados -->
+        <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Iniciar sesión</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Registrarse</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="main">
+    {% if messages %}
     <ul class="messages">
       {% for message in messages %}
-        <li class="{{ message.tags }}">{{ message }}</li>
+      <li class="{{ message.tags }}">{{ message }}</li>
       {% endfor %}
     </ul>
-  {% endif %}
-  {% block content %}{% endblock %}
-</main>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
 
-<script src="{% static 'js/graph.js' %}"></script>
-{% block extra_js %}{% endblock %}
+  <script src="{% static 'js/graph.js' %}?v=1.5"></script>
+  {% block extra_js %}{% endblock %}
 </body>
+
 </html>

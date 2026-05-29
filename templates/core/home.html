@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}TechGraph — Technology Explorer{% endblock %}
+{% block title %}TechGraph — Explorador de Tecnologías{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -18,15 +18,15 @@
 <div class="grid grid-3 section" style="grid-template-columns: repeat(auto-fill, minmax(160px,1fr))">
   <div class="stat-box">
     <span class="num">{{ total_techs }}</span>
-    <span class="lbl">Technologies</span>
+    <span class="lbl">Tecnologías</span>
   </div>
   <div class="stat-box">
     <span class="num">{{ total_projects }}</span>
-    <span class="lbl">Projects</span>
+    <span class="lbl">Proyectos</span>
   </div>
   <div class="stat-box">
     <span class="num">{{ total_connections }}</span>
-    <span class="lbl">Connections</span>
+    <span class="lbl">Conexiones</span>
   </div>
 </div>
 
@@ -46,7 +46,7 @@
               <p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.3rem">
                 {{ p.description|truncatechars:90 }}
               </p>
-              <div class="card-meta" style="margin-top:0.6rem">by {{ p.author_username }}</div>
+              <div class="card-meta" style="margin-top:0.6rem">por {{ p.author_username }}</div>
             </div>
           </a>
         {% endfor %}

@@ -12,7 +12,7 @@ const TYPE_COLORS = {
   other:     { bg: '#1e2740', border: '#64748b', font: '#94a3b8' },
   project:   { bg: '#3d1a00', border: '#f97316', font: '#fdba74' },
   tag:       { bg: '#3b123d', border: '#d946ef', font: '#f5d0fe' },
-  version:   { bg: '#063c21', border: '#22c55e', font: '#86efac' },
+  version:   { bg: '#4c0519', border: '#f43f5e', font: '#fecdd3' },
   user:      { bg: '#2b104a', border: '#8b5cf6', font: '#d8b4fe' },
 };
 
@@ -50,7 +50,7 @@ function buildNode(n) {
     },
     font: { color: n.main ? '#fff' : colors.font, size: n.main ? 14 : 12 },
     size: n.main ? 22 : 14,
-    shape: n.type === 'project' ? 'diamond' : (n.type === 'tag' ? 'box' : 'dot'),
+    shape: n.type === 'project' ? 'diamond' : (n.type === 'tag' ? 'box' : (n.type === 'version' ? 'triangle' : 'dot')),
     borderWidth: n.main ? 2 : 1,
   };
 }

@@ -3,28 +3,34 @@ from .models import TECH_TYPES, PROJECT_TYPES, Technology
 
 
 class TechnologyForm(forms.Form):
-    name = forms.CharField(max_length=100, label='Name')
+    name = forms.CharField(max_length=100, label='Nombre')
     description = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 3}), required=False, label='Description'
+        widget=forms.Textarea(attrs={'rows': 3}), required=False, label='Descripción'
     )
-    url = forms.URLField(required=False, label='Official URL')
+    url = forms.URLField(required=False, label='URL oficial')
     tech_type = forms.ChoiceField(
-        choices=[(t, t.capitalize()) for t in TECH_TYPES], label='Type'
+        choices=[(t, t.capitalize()) for t in TECH_TYPES], label='Tipo'
     )
+    release_year = forms.IntegerField(required=False, label='Año de lanzamiento')
+    license = forms.CharField(max_length=100, initial='MIT', required=False, label='Licencia')
+    is_open_source = forms.BooleanField(initial=True, required=False, label='¿Es Código Abierto?')
+    github_url = forms.URLField(required=False, label='URL del repositorio GitHub')
+    documentation_url = forms.URLField(required=False, label='URL de la documentación oficial')
 
 
 class ProjectForm(forms.Form):
-    title = forms.CharField(max_length=200, label='Title')
+    title = forms.CharField(max_length=200, label='Título')
     description = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 3}), required=False, label='Description'
+        widget=forms.Textarea(attrs={'rows': 3}), required=False, label='Descripción'
     )
-    url = forms.URLField(required=False, label='Project URL')
+    url = forms.URLField(required=False, label='URL del proyecto')
     project_type = forms.ChoiceField(
-        choices=[(t, t.capitalize()) for t in PROJECT_TYPES], label='Type'
+        choices=[(t, t.capitalize()) for t in PROJECT_TYPES], label='Tipo'
     )
+    author_username = forms.CharField(max_length=100, label='Autor', required=True)
     technologies = forms.MultipleChoiceField(
         choices=[], widget=forms.CheckboxSelectMultiple,
-        required=False, label='Technologies used'
+        required=False, label='Tecnologías utilizadas'
     )
 
     def __init__(self, *args, **kwargs):

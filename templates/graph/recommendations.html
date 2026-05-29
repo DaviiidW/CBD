@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Recommendations — TechGraph{% endblock %}
+{% block title %}Recomendaciones — TechGraph{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -13,7 +13,7 @@
         {% csrf_token %}
         <input type="hidden" name="recompute" value="1">
         <button type="submit" class="btn btn-ghost btn-sm" style="border-color:var(--accent2); color:var(--accent2)">
-          ◈ Forzar Recálculo GDS
+          ◈ Recargar sugerencias
         </button>
       </form>
     </div>
@@ -47,7 +47,7 @@
   <div class="card" style="text-align:center; padding:3rem 1.5rem; max-width:680px; margin:0 auto">
     <p style="color:var(--text-dim); margin-bottom:1rem; font-weight:700">Aún no se han calculado recomendaciones GDS para tu perfil.</p>
     <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.5rem; line-height:1.5">
-      Para ver tus recomendaciones colaborativas, dale Like a tecnologías de tu interés y presiona el botón <strong>Forzar Recálculo GDS</strong> arriba (una vez esté activo el plugin Graph Data Science en la base de datos).
+      Para ver tus recomendaciones colaborativas, dale Like a tecnologías de tu interés y presiona el botón <strong>Recargar sugerencias</strong> arriba (una vez esté activo el plugin Graph Data Science en la base de datos).
     </p>
     <a href="{% url 'technology_list' %}" class="btn btn-primary btn-sm">Explorar catálogo y dar Like</a>
   </div>

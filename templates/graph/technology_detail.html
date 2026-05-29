@@ -27,12 +27,28 @@
     <div class="section-title">Grafo local</div>
     <div class="graph-container" style="margin-bottom:2rem">
       <div id="subgraph" style="height:380px"></div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> compatible_with</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> depends_on</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> alternative_to</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> extends</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> used_by (project)</div>
+      <div class="legend" style="flex-direction:column; gap:0.5rem; align-items:stretch;">
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; font-family:'Space Mono', monospace;">NODOS:</span>
+          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Lenguaje</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> Framework</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Librería</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Herramienta</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Base de datos</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div> Plataforma</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f43f5e; clip-path:polygon(50% 0%, 0% 100%, 100% 100%); border-radius:0;"></div> Versión</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#d946ef; border-radius:2px;"></div> Etiqueta</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#5c5957; border-radius:0; transform:rotate(45deg); width:10px; height:10px"></div> Proyecto</div>
+        </div>
+        <div style="height:1px; background:var(--border); opacity:0.5; width:100%;"></div>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+          <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700; font-family:'Space Mono', monospace;">RELACIONES:</span>
+          <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> compatible_con</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> depende_de</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> alternativa_a</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> extiende</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> usado_por (proyecto)</div>
+        </div>
       </div>
     </div>
 
@@ -53,6 +69,44 @@
   </div>
 
   <div>
+    <div class="section-title">Detalles</div>
+    <div class="card" style="margin-bottom:1.5rem; display:flex; flex-direction:column; gap:0.75rem;">
+      {% if tech.release_year %}
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+          <span style="color:var(--text-muted)">Año de lanzamiento:</span>
+          <span class="mono" style="color:var(--text)">{{ tech.release_year }}</span>
+        </div>
+      {% endif %}
+      
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+        <span style="color:var(--text-muted)">Licencia:</span>
+        <span class="mono" style="color:var(--text)">{{ tech.license }}</span>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+        <span style="color:var(--text-muted)">Código Abierto:</span>
+        <span class="mono" style="color:{% if tech.is_open_source %}var(--accent3){% else %}var(--danger){% endif %}">
+          {% if tech.is_open_source %}Sí{% else %}No (Propietario){% endif %}
+        </span>
+      </div>
+      
+      {% if tech.github_url or tech.documentation_url %}
+        <div style="height:1px; background:var(--border); margin:0.25rem 0;"></div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.82rem;">
+          {% if tech.github_url %}
+            <a href="{{ tech.github_url }}" target="_blank" class="btn btn-ghost btn-sm" style="justify-content:center; width:100%;">
+              GitHub
+            </a>
+          {% endif %}
+          {% if tech.documentation_url %}
+            <a href="{{ tech.documentation_url }}" target="_blank" class="btn btn-ghost btn-sm" style="justify-content:center; width:100%;">
+              Documentación
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
     {% if compatible %}
       <div class="section-title">Tecnologías relacionadas</div>
       <div class="card" style="margin-bottom:1.25rem">

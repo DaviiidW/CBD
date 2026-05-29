@@ -5,14 +5,10 @@ logger = logging.getLogger(__name__)
 
 
 class GDSNotAvailableError(RuntimeError):
-    """Excepción lanzada cuando Neo4j Graph Data Science (GDS) no está instalado o activo."""
     pass
 
 
 def is_gds_available():
-    """
-    Verifica si los procedimientos de Graph Data Science (GDS) están registrados y disponibles en Neo4j.
-    """
     try:
         res, _ = db.cypher_query("SHOW PROCEDURES YIELD name WHERE name = 'gds.graph.exists' RETURN count(name) > 0")
         return res and res[0][0]
@@ -21,20 +17,12 @@ def is_gds_available():
 
 
 def clear_similarities():
-    """
-    Elimina todas las relaciones SIMILAR_TO existentes en la base de datos.
-    """
     logger.info("Eliminando relaciones SIMILAR_TO previas...")
     query = "MATCH (:User)-[r:SIMILAR_TO]->(:User) DELETE r"
     db.cypher_query(query)
 
 
 def create_projection(projection_name="user-tech-likes"):
-    """
-    Verifica si la proyección GDS existe, la destruye y crea una nueva proyección
-    que incluye nodos User y Technology, y relaciones LIKES.
-    """
-    # 1. Comprobar si existe la proyección y destruirla de forma segura
     logger.info(f"Comprobando existencia de proyección '{projection_name}'...")
     exists_query = "CALL gds.graph.exists($name) YIELD exists"
     res, _ = db.cypher_query(exists_query, {"name": projection_name})
@@ -43,7 +31,6 @@ def create_projection(projection_name="user-tech-likes"):
         logger.info(f"Destruyendo proyección existente '{projection_name}'...")
         db.cypher_query("CALL gds.graph.drop($name)", {"name": projection_name})
 
-    # 2. Crear proyección
     logger.info(f"Creando proyección '{projection_name}'...")
     project_query = """
     CALL gds.graph.project(
@@ -64,10 +51,6 @@ def create_projection(projection_name="user-tech-likes"):
 
 
 def run_node_similarity(projection_name="user-tech-likes"):
-    """
-    Ejecuta el algoritmo NodeSimilarity sobre la proyección dada
-    y persiste las relaciones SIMILAR_TO con su score.
-    """
     logger.info(f"Ejecutando NodeSimilarity sobre '{projection_name}'...")
     similarity_query = """
     CALL gds.nodeSimilarity.write(
@@ -85,9 +68,6 @@ def run_node_similarity(projection_name="user-tech-likes"):
 
 
 def drop_projection(projection_name="user-tech-likes"):
-    """
-    Destruye de forma segura la proyección GDS para liberar memoria.
-    """
     logger.info(f"Destruyendo proyección '{projection_name}' para liberar memoria...")
     exists_query = "CALL gds.graph.exists($name) YIELD exists"
     res, _ = db.cypher_query(exists_query, {"name": projection_name})
@@ -96,13 +76,6 @@ def drop_projection(projection_name="user-tech-likes"):
 
 
 def recompute_all(projection_name="user-tech-likes"):
-    """
-    Orquesta el pipeline de recomendaciones:
-    1. Borra similitudes previas.
-    2. Crea proyección de grafos.
-    3. Ejecuta algoritmo y escribe similitudes.
-    4. Libera la proyección del catálogo.
-    """
     if not is_gds_available():
         raise GDSNotAvailableError(
             "El plugin de Neo4j 'Graph Data Science' (GDS) no está instalado o no se encuentra habilitado en tu base de datos Neo4j. "
@@ -120,9 +93,6 @@ def recompute_all(projection_name="user-tech-likes"):
 
 
 def get_recommendations(username, limit=10):
-    """
-    Obtiene recomendaciones colaborativas para un usuario basándose en similitudes (SIMILAR_TO).
-    """
     query = """
     MATCH (u:User {username: $username})-[s:SIMILAR_TO]-(other:User)
     MATCH (other)-[:LIKES]->(tech:Technology)
@@ -152,9 +122,6 @@ def get_recommendations(username, limit=10):
 
 
 def get_fallback_recommendations(username, limit=10):
-    """
-    Obtiene recomendaciones basadas en contenido (etiquetas/tags) cuando no existen similitudes GDS.
-    """
     query = """
     MATCH (u:User {username: $username})-[:LIKES]->(liked:Technology)-[:TAGGED_AS]->(tag:Tag)<-[:TAGGED_AS]-(rec:Technology)
     WHERE NOT (u)-[:LIKES]->(rec) AND rec <> liked
@@ -183,9 +150,6 @@ def get_fallback_recommendations(username, limit=10):
 
 
 def get_similar_users(username, limit=5):
-    """
-    Retorna los usuarios más similares al usuario especificado junto con su score de similitud.
-    """
     query = """
     MATCH (u:User {username: $username})-[s:SIMILAR_TO]-(other:User)
     RETURN other.username AS username, s.score AS score
@@ -197,7 +161,8 @@ def get_similar_users(username, limit=5):
     return [
         {
             "username": row[0],
-            "score": round(row[1] * 100, 1)  # Convertir a porcentaje
+            "score": round(row[1] * 100, 1)
         }
         for row in results
     ]
+

@@ -127,6 +127,11 @@ def add_technology(request):
                     name=data['name'], slug=slug,
                     description=data['description'],
                     url=data['url'], tech_type=data['tech_type'],
+                    github_url=data.get('github_url', '') or '',
+                    documentation_url=data.get('documentation_url', '') or '',
+                    license=data.get('license', 'Unknown') or 'Unknown',
+                    release_year=data.get('release_year'),
+                    is_open_source=data.get('is_open_source', True),
                 ).save()
                 messages.success(request, f'Technology "{data["name"]}" added!')
                 return redirect('technology_list')
@@ -149,7 +154,7 @@ def add_project(request):
                     title=data['title'], slug=slug,
                     description=data['description'],
                     url=data['url'], project_type=data['project_type'],
-                    author_username=request.user.username,
+                    author_username=data['author_username'],
                 ).save()
                 for tech_slug in data['technologies']:
                     tech = Technology.nodes.get_or_none(slug=tech_slug)
@@ -158,7 +163,7 @@ def add_project(request):
                 messages.success(request, f'Project "{data["title"]}" added!')
                 return redirect('project_detail', slug=slug)
     else:
-        form = ProjectForm()
+        form = ProjectForm(initial={'author_username': request.user.username})
     return render(request, 'graph/add_project.html', {'form': form})
 
 
@@ -378,18 +383,16 @@ def unlike_technology(request, slug):
 def recommendations_view(request):
     username = request.user.username
 
-    # Permitir recálculo manual en caliente mediante POST
     if request.method == 'POST' and 'recompute' in request.POST:
         try:
             recommendation_service.recompute_all()
-            messages.success(request, '¡Recomendaciones de Neo4j GDS recalculadas con éxito!')
+            messages.success(request, '¡Recomendaciones cargadas con éxito!')
         except recommendation_service.GDSNotAvailableError as e:
             messages.error(request, str(e))
         except Exception as e:
-            messages.error(request, f'Error al recalcular con GDS: {str(e)}')
+            messages.error(request, f'Error al obtener las recomendaciones: {str(e)}')
         return redirect('recommendations')
 
-    # Obtener recomendaciones colaborativas basadas en similitud (GDS)
     recommendations = recommendation_service.get_recommendations(username, limit=10)
 
     return render(request, 'graph/recommendations.html', {

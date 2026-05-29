@@ -11,7 +11,7 @@
 
 <div class="card" style="margin-bottom:2rem; border-color:#1e3a6b; background:#0d1929">
   <p style="font-size:0.85rem; color:var(--text-dim)">
-    <span style="color:var(--accent); font-weight:700">Graph power:</span>
+    <span style="color:var(--accent); font-weight:700">Poder del grafo:</span>
     Intersección de grafos con Cypher:
     <span class="mono" style="color:var(--accent3)">WHERE ALL(s IN $slugs WHERE s IN used_slugs)</span>.
     En SQL requeriría tantos JOINs como tecnologías seleccionadas.
@@ -66,7 +66,7 @@
                     {{ p.description|truncatechars:90 }}
                   </p>
                 {% endif %}
-                <div class="card-meta" style="margin-top:0.6rem">by {{ p.author }}</div>
+                <div class="card-meta" style="margin-top:0.6rem">por {{ p.author }}</div>
               </div>
             </a>
           {% endfor %}

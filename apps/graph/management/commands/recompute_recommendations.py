@@ -15,10 +15,8 @@ class Command(BaseCommand):
             
             self.stdout.write(self.style.SUCCESS(f'[OK] Similitudes recalculadas con éxito en {duration:.2f} segundos.'))
             
-            # Intentar imprimir estadísticas devueltas por Neo4j si están disponibles
             if stats:
                 try:
-                    # GDS 2.x devuelve filas con detalles del cálculo. Intentemos formatear de forma segura.
                     self.stdout.write(self.style.SUCCESS(f"Detalles GDS: {stats}"))
                 except Exception:
                     pass

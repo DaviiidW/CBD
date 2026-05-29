@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Projects — TechGraph{% endblock %}
+{% block title %}Proyectos — TechGraph{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <h1>Projects</h1>
+    <h1>Proyectos</h1>
     <p>Proyectos reales construidos con stacks interesantes.</p>
   </div>
   <div class="flex gap-sm">
@@ -38,7 +38,7 @@
         {{ project.description|truncatechars:110 }}
       </p>
       {% endif %}
-      <div class="card-meta" style="margin-top:0.75rem">by {{ project.author_username }}</div>
+      <div class="card-meta" style="margin-top:0.75rem">por {{ project.author_username }}</div>
     </div>
   </a>
   {% empty %}

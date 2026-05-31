@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from urllib.request import Request, urlopen
 from urllib.error import URLError
+from neomodel import db
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -46,7 +47,6 @@ class Command(BaseCommand):
 
         if options['clear']:
             self.stdout.write('\n[!] Opción --clear detectada. Borrando nodos existentes...')
-            from neomodel import db
             res, _ = db.cypher_query("MATCH (p:Project) RETURN count(p)")
             project_count = res[0][0] if res else 0
             db.cypher_query("MATCH (p:Project) DETACH DELETE p")

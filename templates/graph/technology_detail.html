@@ -2,6 +2,10 @@
 {% block title %}{{ tech.name }} — TechGraph{% endblock %}
 
 {% block content %}
+<div style="margin-bottom:1.25rem">
+  <a href="javascript:history.back()" class="btn btn-ghost btn-sm">← Volver</a>
+</div>
+
 <div class="page-header">
   <div>
     <span class="tag tag-{{ tech.tech_type }}" style="margin-bottom:0.5rem; display:inline-block">{{ tech.tech_type }}</span>

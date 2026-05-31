@@ -16,12 +16,11 @@
   <nav>
     <a href="{% url 'home' %}" class="nav-brand">TechGraph</a>
     <div class="nav-links">
-      <!-- Enlace Solitario: Inicio -->
-      <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Inicio</a>
-      
-      <!-- Grupo 1: Catálogos -->
+      <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active" {% endif %}>Inicio</a>
+
       <div class="nav-dropdown">
-        <button class="nav-dropdown-trigger {% if request.resolver_match.url_name == 'technology_list' or request.resolver_match.url_name == 'project_list' %}active{% endif %}">
+        <button
+          class="nav-dropdown-trigger {% if request.resolver_match.url_name == 'technology_list' or request.resolver_match.url_name == 'project_list' %}active{% endif %}">
           Catálogos ▾
         </button>
         <div class="nav-dropdown-content">
@@ -29,10 +28,10 @@
           <a href="{% url 'project_list' %}">Proyectos</a>
         </div>
       </div>
-      
-      <!-- Grupo 2: Grafo -->
+
       <div class="nav-dropdown">
-        <button class="nav-dropdown-trigger {% if request.resolver_match.url_name in 'global_graph,find_path,filter_projects' %}active{% endif %}">
+        <button
+          class="nav-dropdown-trigger {% if request.resolver_match.url_name in 'global_graph,find_path,filter_projects' %}active{% endif %}">
           Grafo ▾
         </button>
         <div class="nav-dropdown-content">
@@ -42,41 +41,40 @@
         </div>
       </div>
 
-      <!-- Grupo 3: Añadir (Solo autenticados) -->
       {% if user.is_authenticated %}
-        <div class="nav-dropdown">
-          <button class="nav-dropdown-trigger {% if request.resolver_match.url_name in 'add_technology,add_project' %}active{% endif %}" style="color: var(--accent3);">
-            + Añadir ▾
-          </button>
-          <div class="nav-dropdown-content">
-            <a href="{% url 'add_technology' %}">+ Nueva Tecnología</a>
-            <a href="{% url 'add_project' %}">+ Nuevo Proyecto</a>
-          </div>
+      <div class="nav-dropdown">
+        <button
+          class="nav-dropdown-trigger {% if request.resolver_match.url_name in 'add_technology,add_project' %}active{% endif %}"
+          style="color: var(--accent3);">
+          + Añadir ▾
+        </button>
+        <div class="nav-dropdown-content">
+          <a href="{% url 'add_technology' %}">+ Nueva Tecnología</a>
+          <a href="{% url 'add_project' %}">+ Nuevo Proyecto</a>
         </div>
+      </div>
       {% endif %}
     </div>
 
     <div class="nav-auth">
       {% if user.is_authenticated %}
-        <!-- Grupo 4: Mi Cuenta -->
-        <div class="nav-dropdown nav-dropdown-right">
-          <button class="btn btn-ghost btn-sm" style="font-weight: 700;">
-            👤 {{ user.username }} ▾
-          </button>
-          <div class="nav-dropdown-content">
-            <a href="{% url 'favorite_technologies' %}">Mis Favoritas</a>
-            <a href="{% url 'recommendations' %}">Recomendaciones</a>
-            <div style="height: 1px; background: var(--border); margin: 0.4rem 0;"></div>
-            <form action="{% url 'logout' %}" method="post" style="display:block; margin:0;">
-              {% csrf_token %}
-              <button type="submit" style="width:100%;">Cerrar sesión</button>
-            </form>
-          </div>
+      <div class="nav-dropdown nav-dropdown-right">
+        <button class="btn btn-ghost btn-sm" style="font-weight: 700;">
+          {{ user.username }} ▾
+        </button>
+        <div class="nav-dropdown-content">
+          <a href="{% url 'favorite_technologies' %}">Mis Favoritas</a>
+          <a href="{% url 'recommendations' %}">Recomendaciones</a>
+          <div style="height: 1px; background: var(--border); margin: 0.4rem 0;"></div>
+          <form action="{% url 'logout' %}" method="post" style="display:block; margin:0;">
+            {% csrf_token %}
+            <button type="submit" style="width:100%;">Cerrar sesión</button>
+          </form>
         </div>
+      </div>
       {% else %}
-        <!-- Standalone para usuarios invitados -->
-        <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Iniciar sesión</a>
-        <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Registrarse</a>
+      <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Iniciar sesión</a>
+      <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Registrarse</a>
       {% endif %}
     </div>
   </nav>
@@ -93,7 +91,249 @@
   </main>
 
   <script src="{% static 'js/graph.js' %}?v=1.5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   {% block extra_js %}{% endblock %}
+
+  <div class="chatbot-trigger" id="chatbotTrigger" title="Chatear con el Asistente de TechGraph">
+    💬
+  </div>
+
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header">
+      <div class="chatbot-header-title">
+        <div>
+          <div style="font-weight:700">Asistente TechGraph</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button class="chatbot-header-close" id="chatbotClear" title="Borrar conversación"
+          style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-right: 0.4rem; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; padding: 0.15rem 0.4rem; background: rgba(255, 255, 255, 0.05);">Limpiar
+          chat</button>
+        <button class="chatbot-header-close" id="chatbotClose" aria-label="Cerrar chat">✕</button>
+      </div>
+    </div>
+
+    <div class="chatbot-messages" id="chatbotMessages">
+      <div class="chatbot-message chatbot-message-bot">
+        <p>¡Hola! 👋 Soy tu <strong>Asistente de Arquitectura</strong> de TechGraph.</p>
+        <p>Puedo consultar en tiempo real el <strong>grafo de base de datos Neo4j</strong> para darte información 100%
+          veraz sobre alternativas, compatibilidad, dependencias y proyectos.</p>
+        <p>¿Qué te gustaría consultar hoy?</p>
+
+        <div class="chatbot-suggestions">
+          <button class="chatbot-suggestion-btn"
+            onclick="sendSuggestion('¿Qué alternativas tengo para PostgreSQL?')">Alternativas a PostgreSQL</button>
+          <button class="chatbot-suggestion-btn"
+            onclick="sendSuggestion('Dime con qué es compatible FastAPI')">Compatibilidad de FastAPI</button>
+          <button class="chatbot-suggestion-btn"
+            onclick="sendSuggestion('¿De qué tecnologías depende React?')">Dependencias de React</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chatbot-input-area">
+      <input type="text" id="chatbotInput" placeholder="Pregunta sobre la arquitectura..." autocomplete="off">
+      <button id="chatbotSend" aria-label="Enviar mensaje">➤</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Selectores del DOM
+    const chatbotTrigger = document.getElementById('chatbotTrigger');
+    const chatbotPanel = document.getElementById('chatbotPanel');
+    const chatbotClose = document.getElementById('chatbotClose');
+    const chatbotClear = document.getElementById('chatbotClear');
+    const chatbotMessages = document.getElementById('chatbotMessages');
+    const chatbotInput = document.getElementById('chatbotInput');
+    const chatbotSend = document.getElementById('chatbotSend');
+
+    // 2. Extraer contexto de tecnología de la URL actual
+    let currentTechSlug = null;
+    const pathParts = window.location.pathname.split('/');
+    const techIdx = pathParts.indexOf('technologies');
+    if (techIdx !== -1 && pathParts[techIdx + 1] && pathParts[techIdx + 1] !== 'add' && pathParts[techIdx + 1] !== 'relations') {
+      currentTechSlug = pathParts[techIdx + 1];
+    }
+
+    // 3. Inicialización del Estado
+    const initialWelcomeHTML = chatbotMessages.innerHTML;
+
+    if (localStorage.getItem('chatbot_open') === 'true') {
+      chatbotPanel.classList.add('active');
+    }
+
+    const savedHistory = localStorage.getItem('chatbot_history');
+    if (savedHistory) {
+      chatbotMessages.innerHTML = savedHistory;
+      setTimeout(() => {
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      }, 50);
+    }
+
+    // 4. Funciones de Control del Chatbot
+    function closeChat() {
+      chatbotPanel.classList.remove('active');
+      localStorage.setItem('chatbot_open', 'false');
+    }
+
+    function clearChatHistory() {
+      localStorage.removeItem('chatbot_history');
+      localStorage.removeItem('chatbot_messages_array');
+      chatbotMessages.innerHTML = initialWelcomeHTML;
+    }
+
+    function sendSuggestion(text) {
+      chatbotInput.value = text;
+      sendMessage();
+    }
+
+    // 5. Registro de Eventos Escuchadores
+    chatbotTrigger.addEventListener('click', () => {
+      const isOpen = chatbotPanel.classList.contains('active');
+      if (isOpen) {
+        closeChat();
+      } else {
+        chatbotPanel.classList.add('active');
+        localStorage.setItem('chatbot_open', 'true');
+        chatbotInput.focus();
+      }
+    });
+
+    chatbotClose.addEventListener('click', closeChat);
+    chatbotClear.addEventListener('click', clearChatHistory);
+    chatbotSend.addEventListener('click', sendMessage);
+
+    chatbotInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // 6. Funciones de Mensajes y Carga
+    function appendMessage(text, isUser = false) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('chatbot-message', isUser ? 'chatbot-message-user' : 'chatbot-message-bot');
+
+      if (isUser) {
+        messageDiv.innerText = text;
+      } else {
+        messageDiv.innerHTML = parseSimpleMarkdown(text);
+      }
+
+      chatbotMessages.appendChild(messageDiv);
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+      saveChatHistory();
+      saveMessageToArray(text, isUser ? 'user' : 'assistant');
+    }
+
+    function saveMessageToArray(text, role) {
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('chatbot_messages_array')) || [];
+      } catch (e) { }
+      history.push({ role: role, content: text });
+      localStorage.setItem('chatbot_messages_array', JSON.stringify(history.slice(-20)));
+    }
+
+    function saveChatHistory() {
+      const tempContainer = chatbotMessages.cloneNode(true);
+      const loader = tempContainer.querySelector('#chatbotLoading');
+      if (loader) loader.remove();
+      localStorage.setItem('chatbot_history', tempContainer.innerHTML);
+    }
+
+    function appendLoadingIndicator() {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'chatbotLoading';
+      loadingDiv.classList.add('chatbot-message', 'chatbot-message-bot');
+      loadingDiv.innerHTML = `
+        <div class="chatbot-loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+      chatbotMessages.appendChild(loadingDiv);
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    function removeLoadingIndicator() {
+      const loader = document.getElementById('chatbotLoading');
+      if (loader) loader.remove();
+    }
+
+    function sendMessage() {
+      const text = chatbotInput.value.trim();
+      if (!text) return;
+
+      appendMessage(text, true);
+      chatbotInput.value = '';
+      appendLoadingIndicator();
+
+      let history = [];
+      try {
+        history = JSON.parse(localStorage.getItem('chatbot_messages_array')) || [];
+        if (history.length > 0 && history[history.length - 1].role === 'user') {
+          history.pop();
+        }
+      } catch (e) { }
+
+      fetch('/graph/api/chatbot/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          message: text,
+          tech_slug: currentTechSlug,
+          history: history.slice(-6)
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          removeLoadingIndicator();
+          if (data.error) {
+            appendMessage("Error: " + data.error);
+          } else {
+            appendMessage(data.response);
+          }
+        })
+        .catch(() => {
+          removeLoadingIndicator();
+          appendMessage("Error de red al conectar con el servidor.");
+        });
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    function parseSimpleMarkdown(text) {
+      if (typeof marked !== 'undefined') {
+        marked.setOptions({
+          breaks: true,
+          gfm: true
+        });
+        return marked.parse(text);
+      }
+
+      let html = text;
+      html = html.replace(/\n/g, '<br>');
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      return html;
+    }
+  </script>
 </body>
 
 </html>

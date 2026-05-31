@@ -10,6 +10,9 @@ from .services import recommendation_service
 from . import queries
 from .forms import TechnologyForm, ProjectForm, TechRelationForm
 
+from django.views.decorators.csrf import csrf_exempt
+from .services import chatbot_service
+
 
 def global_graph(request):
     data = queries.get_full_graph_data()
@@ -409,3 +412,22 @@ def favorite_technologies_view(request):
     return render(request, 'graph/favorite_technologies.html', {
         'technologies': liked_techs
     })
+    
+
+@csrf_exempt
+def chatbot_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            message = data.get('message', '').strip()
+            context_tech_slug = data.get('tech_slug', None)
+            history = data.get('history', [])
+            
+            if not message:
+                return JsonResponse({'error': 'El mensaje no puede estar vacío.'}, status=400)
+                
+            response_text = chatbot_service.get_chatbot_response(message, context_tech_slug, history)
+            return JsonResponse({'response': response_text})
+        except Exception as e:
+            return JsonResponse({'error': f'Error en el servidor del chatbot: {str(e)}'}, status=500)
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)

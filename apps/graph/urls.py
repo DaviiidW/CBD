@@ -17,4 +17,5 @@ urlpatterns = [
     path('projects/filter/', views.filter_projects, name='filter_projects'),
     path('projects/<slug:slug>/', views.project_detail, name='project_detail'),
     path('path/', views.find_path, name='find_path'),
+    path('api/chatbot/', views.chatbot_api, name='chatbot_api'),
 ]

@@ -37,7 +37,11 @@ class SimilarToRel(StructuredRel):
 # ── Node models ───────────────────────────────────────────────────────────────
 
 TECH_TYPES = ('language', 'library', 'framework', 'tool', 'database', 'platform', 'other')
-PROJECT_TYPES = ('web app', 'cli', 'library', 'game', 'api', 'mobile', 'desktop', 'other')
+PROJECT_TYPES = (
+    'web app', 'cli', 'library', 'game', 'api', 'mobile', 'desktop',
+    'framework', 'database', 'devops/cloud', 'ai/ml', 'os/kernel',
+    'book/tutorial', 'tool', 'other'
+)
 
 
 class Technology(StructuredNode):

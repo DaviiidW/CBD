@@ -9,7 +9,8 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.timezone import make_aware
 
-from apps.graph.models import Technology, Project, TechnologyVersion, Tag
+from django.contrib.auth.models import User as DjangoUser
+from apps.graph.models import Technology, Project, TechnologyVersion, Tag, User as Neo4jUser
 
 class Command(BaseCommand):
     help = 'Pobla la base de datos Neo4j'
@@ -39,6 +40,9 @@ class Command(BaseCommand):
             
         with open(os.path.join(fixtures_dir, 'projects.json'), 'r', encoding='utf-8') as f:
             offline_projects = json.load(f)
+            
+        with open(os.path.join(fixtures_dir, 'users.json'), 'r', encoding='utf-8') as f:
+            offline_users = json.load(f)
 
         if options['clear']:
             self.stdout.write('\n[!] Opción --clear detectada. Borrando nodos existentes...')
@@ -59,9 +63,18 @@ class Command(BaseCommand):
             version_count = res[0][0] if res else 0
             db.cypher_query("MATCH (v:TechnologyVersion) DETACH DELETE v")
             self.stdout.write(f'  - Borradas {version_count} versiones.')
+
+            # Borrar todos los usuarios de prueba cuyo nombre comience con 'user_'
+            res, _ = db.cypher_query("MATCH (u:User) WHERE u.username STARTS WITH 'user_' RETURN count(u)")
+            test_users_count = res[0][0] if res else 0
+            db.cypher_query("MATCH (u:User) WHERE u.username STARTS WITH 'user_' DETACH DELETE u")
+            self.stdout.write(f'  - Borrados {test_users_count} usuarios de prueba en Neo4j.')
+            django_users_deleted, _ = DjangoUser.objects.filter(username__startswith='user_').delete()
+            self.stdout.write(f'  - Borrados {django_users_deleted} usuarios de prueba en base de datos relacional.')
+
             self.stdout.write(self.style.SUCCESS('[OK] Base de datos limpia.'))
 
-        self.stdout.write('\n[1/5] Creando tecnologías del catálogo...')
+        self.stdout.write('\n[1/6] Creando tecnologías del catálogo...')
         tech_map = {}
         tech_created_count = 0
         tech_skipped_count = 0
@@ -91,11 +104,16 @@ class Command(BaseCommand):
                 
         self.stdout.write(self.style.SUCCESS(f'  [OK] Tecnologías procesadas: {tech_created_count} creadas, {tech_skipped_count} ya existentes.'))
 
-        self.stdout.write('\n[2/5] Generando etiquetas (Tags) y versiones estructuradas...')
+        self.stdout.write('\n[2/6] Generando etiquetas (Tags) y versiones estructuradas...')
         tags_map = {}
         versions_created = 0
 
-        basic_tags = ['web', 'backend', 'frontend', 'ai', 'database', 'cloud', 'devops', 'mobile', 'testing', 'compiler', 'security', 'systems', 'analytics']
+        basic_tags = [
+            'web', 'backend', 'frontend', 'ai', 'database', 'cloud', 
+            'devops', 'mobile', 'testing', 'compiler', 'security', 
+            'systems', 'analytics', 'data-science', 'cybersecurity', 
+            'game-dev', 'automation', 'api'
+        ]
         for tag_name in basic_tags:
             tag = Tag.nodes.get_or_none(name=tag_name)
             if not tag:
@@ -107,17 +125,31 @@ class Command(BaseCommand):
             assigned_tags = []
             if t_type == 'language':
                 assigned_tags.append('systems' if slug in ['c', 'cpp', 'rust', 'go', 'assembly'] else 'web')
+                if slug in ['python', 'r', 'julia']:
+                    assigned_tags.append('data-science')
+                    assigned_tags.append('ai')
             elif t_type == 'framework':
                 assigned_tags.append('web')
                 assigned_tags.append('frontend' if slug in ['react', 'vue', 'svelte', 'angular', 'nextjs', 'nuxt', 'sveltekit'] else 'backend')
+                if slug in ['flutter', 'react-native']:
+                    assigned_tags.append('mobile')
             elif t_type == 'database':
                 assigned_tags.append('database')
+                assigned_tags.append('systems')
             elif t_type == 'platform':
                 assigned_tags.append('cloud')
+                assigned_tags.append('devops')
             elif t_type == 'tool':
                 assigned_tags.append('devops')
-            elif t_type == 'library' and slug in ['pytorch', 'tensorflow', 'transformers', 'scikit-learn']:
-                assigned_tags.append('ai')
+                assigned_tags.append('automation')
+            elif t_type == 'library':
+                if slug in ['pytorch', 'tensorflow', 'transformers', 'scikit-learn', 'keras', 'langchain']:
+                    assigned_tags.append('ai')
+                    assigned_tags.append('data-science')
+                elif slug in ['pandas', 'numpy', 'scipy', 'matplotlib', 'polars']:
+                    assigned_tags.append('data-science')
+                elif slug in ['playwright', 'jest', 'vitest']:
+                    assigned_tags.append('testing')
 
             for t_name in assigned_tags:
                 if t_name in tags_map:
@@ -134,7 +166,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f'  [OK] Asignación completada. Creadas {versions_created} versiones.'))
 
-        self.stdout.write('\n[3/5] Creando relaciones cruzadas de arquitectura entre tecnologías...')
+        self.stdout.write('\n[3/6] Creando relaciones cruzadas de arquitectura entre tecnologías...')
         rel_created_count = 0
         rel_error_count = 0
 
@@ -167,7 +199,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f'  [OK] Relaciones creadas: {rel_created_count}. Errores/omitidas: {rel_error_count}.'))
 
-        self.stdout.write('\n[4/5] Descargando proyectos reales de código abierto desde la API de GitHub...')
+        self.stdout.write('\n[4/6] Descargando proyectos reales de código abierto desde la API de GitHub...')
         limit = min(options['limit'], 500)
         github_projects = []
         api_success = False
@@ -200,7 +232,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('  [!] Cargando dataset local enriquecido en Modo Resiliencia (Offline)...'))
             github_projects = offline_projects[:limit]
 
-        self.stdout.write('\n[5/5] Insertando proyectos y mapeando dependencias a tecnologías...')
+        self.stdout.write('\n[5/6] Insertando proyectos y mapeando dependencias a tecnologías...')
         projects_created_count = 0
         projects_skipped_count = 0
         relations_uses_count = 0
@@ -260,6 +292,41 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'  [OK] Proyectos procesados: {projects_created_count} creados, {projects_skipped_count} ya existentes.'))
         self.stdout.write(self.style.SUCCESS(f'  [OK] Relaciones de uso (USES) mapeadas con éxito: {relations_uses_count}.'))
 
+        self.stdout.write('\n[6/6] Creando usuarios de prueba y sus relaciones de LIKES...')
+        users_created = 0
+        likes_connected = 0
+
+        for u_data in offline_users:
+            username = u_data['username']
+            email = u_data['email']
+            likes = u_data['likes']
+
+            # Asegurarnos de que no existan previamente
+            DjangoUser.objects.filter(username=username).delete()
+            db.cypher_query("MATCH (u:User {username: $username}) DETACH DELETE u", {"username": username})
+
+            # Crear Django user
+            DjangoUser.objects.create_user(
+                username=username,
+                email=email,
+                password='testpassword123'
+            )
+            users_created += 1
+
+            # Obtener nodo Neo4j
+            neo_user = Neo4jUser.nodes.get(username=username)
+
+            # Conectar relaciones de LIKES
+            for tech_slug in likes:
+                tech_node = Technology.nodes.get_or_none(slug=tech_slug)
+                if tech_node:
+                    if not neo_user.likes.is_connected(tech_node):
+                        neo_user.likes.connect(tech_node)
+                        likes_connected += 1
+
+        self.stdout.write(self.style.SUCCESS(f'  [OK] Creados {users_created} usuarios de prueba en ambas bases de datos.'))
+        self.stdout.write(self.style.SUCCESS(f'  [OK] Asignadas {likes_connected} relaciones de LIKES.'))
+
         self.stdout.write(self.style.SUCCESS('\n============================================================='))
         self.stdout.write(self.style.SUCCESS('                  POBLACIÓN DE GRAFO COMPLETADA!'))
         self.stdout.write(self.style.SUCCESS('============================================================='))
@@ -268,6 +335,7 @@ class Command(BaseCommand):
         self.stdout.write(f'  - Relaciones cruzadas: {rel_created_count} de arquitectura mapeadas.')
         self.stdout.write(f'  - Proyectos importados: {projects_created_count} nuevos repositorios reales.')
         self.stdout.write(f'  - Relaciones de Proyectos (USES): {relations_uses_count} asignadas dinámicamente.')
+        self.stdout.write(f'  - Usuarios de prueba creados: {users_created} (con {likes_connected} likes).')
         self.stdout.write(self.style.SUCCESS('=============================================================\n'))
 
     def parse_date(self, date_str):
@@ -286,20 +354,89 @@ class Command(BaseCommand):
     def infer_project_type(self, repo_data):
         topics = [t.lower() for t in repo_data.get('topics', [])]
         desc = (repo_data.get('description') or '').lower()
+        title = (repo_data.get('name') or repo_data.get('title') or '').lower()
         
-        if any(t in topics for t in ['cli', 'command-line', 'terminal']) or 'command line' in desc:
-            return 'cli'
-        elif any(t in topics for t in ['game', 'engine', 'game-development']) or 'game' in desc:
-            return 'game'
-        elif any(t in topics for t in ['library', 'package', 'sdk', 'api-client']) or 'library' in desc or 'framework' in desc:
-            return 'library'
-        elif any(t in topics for t in ['api', 'rest-api', 'graphql', 'grpc']) or 'api' in desc:
-            return 'api'
-        elif any(t in topics for t in ['mobile', 'android', 'ios', 'react-native', 'flutter']) or 'app' in desc:
-            return 'mobile'
-        elif any(t in topics for t in ['desktop', 'electron', 'tauri', 'gui']) or 'desktop app' in desc:
-            return 'desktop'
-        elif any(t in topics for t in ['web', 'website', 'web-app', 'frontend', 'backend', 'fullstack']) or 'web app' in desc or 'dashboard' in desc:
-            return 'web app'
-        else:
-            return 'other'
+        # Diccionario de reglas por tipo de proyecto
+        rules = {
+            'ai/ml': {
+                'topics': ['machine-learning', 'deep-learning', 'ai', 'artificial-intelligence', 'neural-network', 'nlp', 'computer-vision', 'transformers', 'llm', 'gpt', 'pytorch', 'tensorflow', 'data-science', 'embeddings'],
+                'keywords': ['machine learning', 'deep learning', 'neural network', 'artificial intelligence', 'nlp', 'computer vision', 'llm', 'transformers', 'stable diffusion', 'keras', 'pytorch', 'tensorflow', 'data science', 'generative ai']
+            },
+            'devops/cloud': {
+                'topics': ['docker', 'kubernetes', 'k8s', 'devops', 'ci-cd', 'terraform', 'ansible', 'aws', 'gcp', 'azure', 'cloud', 'cloud-native', 'monitoring', 'gitops', 'orchestration', 'cicd'],
+                'keywords': ['container', 'orchestration', 'ci/cd', 'continuous integration', 'cloud-native', 'infrastructure as code', 'monitoring', 'prometheus', 'deployment', 'gitops', 'serverless', 'cloud infrastructure']
+            },
+            'database': {
+                'topics': ['database', 'db', 'nosql', 'sql', 'key-value', 'cache', 'postgres', 'redis', 'mongodb', 'mysql', 'neo4j', 'cassandra', 'sqlite', 'elasticsearch', 'vectordb'],
+                'keywords': ['database', 'datastore', 'key-value store', 'cache server', 'nosql', 'relational database', 'query engine', 'time-series database', 'vector database']
+            },
+            'os/kernel': {
+                'topics': ['operating-system', 'kernel', 'os', 'linux', 'unix', 'hypervisor', 'rtos', 'firmware'],
+                'keywords': ['operating system', 'kernel', 'bootloader', 'hypervisor', 'embedded system', 'rtos']
+            },
+            'book/tutorial': {
+                'topics': ['awesome-list', 'awesome', 'roadmap', 'tutorial', 'education', 'learning', 'interview', 'book', 'guide', 'courses', 'curriculum'],
+                'keywords': ['awesome list', 'curated list', 'roadmap', 'tutorial', 'interview prep', 'learning resources', 'free book', 'guide', 'curated collection', 'learn how to']
+            },
+            'game': {
+                'topics': ['game', 'game-engine', 'game-development', 'unity', 'unreal', 'godot', 'retro-gaming', 'canvas-game'],
+                'keywords': ['game engine', 'game development', 'unity', 'unreal engine', 'godot', 'video game']
+            },
+            'mobile': {
+                'topics': ['mobile', 'android', 'ios', 'flutter', 'react-native', 'swiftui', 'kotlin-multiplatform'],
+                'keywords': ['mobile app', 'android app', 'ios app', 'flutter', 'react native', 'swiftui']
+            },
+            'desktop': {
+                'topics': ['desktop', 'electron', 'tauri', 'gui', 'qt', 'gtk', 'desktop-app'],
+                'keywords': ['desktop app', 'electron app', 'tauri', 'gui application', 'qt framework', 'native desktop']
+            },
+            'web app': {
+                'topics': ['web', 'website', 'web-app', 'frontend', 'backend', 'fullstack', 'dashboard', 'saas', 'admin-template'],
+                'keywords': ['web app', 'website', 'frontend framework', 'backend framework', 'fullstack', 'dashboard', 'saas', 'admin panel']
+            },
+            'api': {
+                'topics': ['api', 'rest-api', 'graphql', 'grpc', 'api-gateway', 'microservice', 'json-api'],
+                'keywords': ['rest api', 'graphql api', 'grpc', 'microservices', 'api gateway', 'web api']
+            },
+            'framework': {
+                'topics': ['framework', 'web-framework', 'application-framework', 'mvc-framework'],
+                'keywords': ['web framework', 'application framework', 'minimalist framework', 'mvc framework']
+            },
+            'cli': {
+                'topics': ['cli', 'command-line', 'terminal', 'shell', 'tui', 'bash-script'],
+                'keywords': ['command line tool', 'cli tool', 'terminal app', 'shell script', 'terminal ui', 'interactive cli']
+            },
+            'tool': {
+                'topics': ['tool', 'utilities', 'compiler', 'linter', 'formatter', 'parser', 'editor', 'debugger', 'package-manager', 'build-tool'],
+                'keywords': ['development tool', 'compiler', 'linter', 'code formatter', 'text editor', 'package manager', 'build system', 'productivity tool']
+            },
+            'library': {
+                'topics': ['library', 'package', 'sdk', 'api-client', 'helper', 'npm-package', 'pip-package'],
+                'keywords': ['library', 'sdk', 'helper function', 'utility library', 'software development kit', 'wrapper']
+            }
+        }
+
+        scores = {cat: 0 for cat in rules}
+
+        for cat, criteria in rules.items():
+            # Coincidencias en temas (topics) -> Peso mayor (3x)
+            topic_matches = sum(1 for t in topics if t in criteria['topics'])
+            scores[cat] += topic_matches * 3
+
+            # Coincidencias en el título -> Peso intermedio (2x)
+            if any(kw in title for kw in criteria['keywords']):
+                scores[cat] += 2
+
+            # Coincidencias en la descripción -> Peso básico (1x)
+            desc_matches = sum(1 for kw in criteria['keywords'] if kw in desc)
+            scores[cat] += desc_matches
+
+        # Encontrar el tipo con mayor puntuación
+        best_cat = 'other'
+        max_score = 0
+        for cat, score in scores.items():
+            if score > max_score:
+                max_score = score
+                best_cat = cat
+
+        return best_cat

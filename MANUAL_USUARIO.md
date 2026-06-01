@@ -24,8 +24,10 @@ La aplicación está construida sobre una **base de datos de grafos** (Neo4j), l
 5. [El grafo visual](#5-el-grafo-visual)
 6. [Buscar camino entre tecnologías](#6-buscar-camino-entre-tecnologías)
 7. [Filtrar proyectos por stack](#7-filtrar-proyectos-por-stack)
-8. [Contribuir — añadir tecnologías y proyectos](#8-contribuir--añadir-tecnologías-y-proyectos)
-9. [Por qué una base de datos de grafos](#9-por-qué-una-base-de-datos-de-grafos)
+8. [Mis favoritas y recomendaciones](#8-mis-favoritas-y-recomendaciones)
+9. [Asistente Conversacional (Chatbot)](#9-asistente-conversacional-chatbot)
+10. [Contribuir — añadir tecnologías y proyectos](#10-contribuir--añadir-tecnologías-y-proyectos)
+11. [Por qué una base de datos de grafos](#11-por-qué-una-base-de-datos-de-grafos)
 
 ---
 
@@ -55,24 +57,28 @@ Hay un usuario de demostración preconfigurado disponible tanto en la versión d
 
 ## 2. Navegación
 
-La barra de navegación superior da acceso a todas las secciones:
+La barra de navegación superior da acceso a todas las secciones organizadas mediante menús desplegables:
 
 | Sección | Descripción |
 |---|---|
-| **Home** | Página principal con resumen y accesos rápidos |
-| **Graph** | Grafo global interactivo con todos los nodos |
-| **Technologies** | Listado completo de tecnologías |
-| **Projects** | Listado completo de proyectos |
-| **Find Path** | Busca el camino entre dos tecnologías |
-| **Filter** | Filtra proyectos por su stack tecnológico |
+| **Inicio (Home)** | Página principal con resumen y accesos rápidos. |
+| **Catálogos ▾** | Menú desplegable con las colecciones de la aplicación:<br>• **Tecnologías**: Listado completo de tecnologías organizadas por tipo.<br>• **Proyectos**: Listado de proyectos reales y sus respectivos stacks. |
+| **Grafo ▾** | Menú desplegable con las herramientas del grafo:<br>• **Grafo completo**: Visor interactivo del grafo global con todos los nodos.<br>• **Buscar camino**: Encuentra la ruta más corta entre dos tecnologías.<br>• **Filtrar stack**: Filtra proyectos por múltiples tecnologías a la vez. |
 
-Si tienes sesión iniciada, aparecerán también los botones **+ Technology** y **+ Project** en la esquina superior derecha.
+Si has iniciado sesión (como con el usuario `demo`), se habilitan accesos directos adicionales en la barra superior:
+
+| Sección / Opción | Descripción |
+|---|---|
+| **+ Añadir ▾** | Menú desplegable para contribuir al sistema:<br>• **+ Nueva Tecnología**: Formulario para añadir una nueva tecnología.<br>• **+ Nuevo Proyecto**: Formulario para registrar un proyecto y su stack. |
+| **Usuario (Menú personal) ▾** | Menú desplegable con tu nombre de usuario:<br>• **Mis Favoritas**: Listado de tus tecnologías marcadas como favoritas.<br>• **Recomendaciones**: Recomendaciones inteligentes basadas en tus tecnologías favoritas y proyectos.<br>• **Cerrar sesión**: Terminar la sesión activa. |
+
+Además, en la esquina inferior derecha de cualquier página de la aplicación dispones del **Asistente TechGraph** (icono flotante 💬), un chatbot interactivo potenciado por IA que te permite consultar información de la base de datos de grafos Neo4j en tiempo real usando lenguaje natural.
 
 ---
 
 ## 3. Explorar tecnologías
 
-Desde **Technologies** puedes ver todas las tecnologías registradas, organizadas por tipo:
+Desde el listado de **Tecnologías** (dentro del menú desplegable **Catálogos ▾ > Tecnologías**) puedes ver todas las tecnologías registradas, organizadas por tipo:
 
 - `language` — lenguajes de programación (Python, JavaScript, Go...)
 - `framework` — frameworks web o de aplicación (Django, React, FastAPI...)
@@ -102,7 +108,7 @@ Al hacer click en una tecnología verás su **página de detalle**, que incluye:
 
 ## 4. Explorar proyectos
 
-Desde **Projects** puedes ver todos los proyectos registrados. Cada proyecto muestra:
+Desde el listado de **Proyectos** (dentro del menú desplegable **Catálogos ▾ > Proyectos**) puedes ver todos los proyectos registrados. Cada proyecto muestra:
 
 - El **tipo** de aplicación (web app, api, cli, game...)
 - Una **descripción** del proyecto
@@ -119,7 +125,7 @@ Al entrar al detalle de un proyecto verás:
 
 ## 5. El grafo visual
 
-La sección **Graph** muestra un grafo interactivo con todos los nodos y conexiones de la base de datos.
+La sección **Grafo completo** (dentro del menú desplegable **Grafo ▾ > Grafo completo**) muestra un grafo interactivo con todos los nodos y conexiones de la base de datos.
 
 ### Cómo interactuar
 
@@ -148,7 +154,7 @@ Los nodos con forma de **rombo** son proyectos. El resto son tecnologías.
 
 ## 6. Buscar camino entre tecnologías
 
-La sección **Find Path** permite descubrir cómo dos tecnologías están conectadas, aunque no tengan una relación directa.
+La sección **Buscar camino** (dentro del menú desplegable **Grafo ▾ > Buscar camino**) permite descubrir cómo dos tecnologías están conectadas, aunque no tengan una relación directa.
 
 ### Cómo usarlo
 
@@ -174,7 +180,7 @@ TypeScript no se relaciona directamente con PostgreSQL, pero a través de NestJS
 
 ## 7. Filtrar proyectos por stack
 
-La sección **Filter** permite encontrar proyectos que usan **todas** las tecnologías que selecciones a la vez.
+La sección **Filtrar stack** (dentro del menú desplegable **Grafo ▾ > Filtrar stack**) permite encontrar proyectos que usan **todas** las tecnologías que selecciones a la vez.
 
 ### Cómo usarlo
 
@@ -190,48 +196,71 @@ Si seleccionas `fastapi` + `react` + `postgresql`, solo aparecerán proyectos qu
 
 ---
 
-## 8. Contribuir — añadir tecnologías y proyectos
+## 8. Mis favoritas y recomendaciones
+
+El sistema permite a los usuarios registrados gestionar sus preferencias e interactuar con un motor de recomendación personalizado basado en **Neo4j Graph Data Science (GDS)**.
+
+### Guardar tecnologías favoritas
+Desde la página de detalle de cualquier tecnología registrada en el catálogo, verás un botón con forma de corazón o acción de favorito (**Favorito** / **Quitar de favoritos**).
+
+---
+
+## 9. Chatbot
+
+TechGraph integra un **Chatbot** inteligente accesible desde cualquier página de la aplicación haciendo click en el botón flotante con el icono de bocadillo (**💬**) en la esquina inferior derecha.
+
+Este chatbot utiliza una arquitectura **GraphRAG (Retrieval-Augmented Generation)** conectando el modelo de lenguaje de Google Gemini con consultas en vivo a la base de datos Neo4j:
+
+### Capacidades del asistente
+Puedes preguntarle en lenguaje natural de forma conversacional:
+* **Consultar alternativas**: *"¿Qué alternativas tengo para Django?"* u *"¿Qué bases de datos no relacionales hay registradas?"*
+* **Explorar compatibilidades y dependencias**: *"Dime con qué es compatible FastAPI"* o *"¿De qué tecnologías depende React?"*
+* **Preguntar por proyectos**: *"¿Qué proyectos utilizan TypeScript y React?"*
+
+---
+
+## 10. Contribuir — añadir tecnologías y proyectos
 
 Para añadir contenido necesitas una cuenta. El registro es libre y gratuito.
 
 ### Crear una cuenta
 
-1. Haz click en **Register** en la barra de navegación
-2. Introduce un nombre de usuario y contraseña
-3. Ya puedes contribuir
+1. Haz click en **Registrarse** en la barra de navegación o entra directamente a la URL de registro.
+2. Introduce un nombre de usuario y contraseña.
+3. Ya puedes contribuir.
 
 ### Añadir una tecnología
 
-1. Haz click en **+ Technology** (barra superior) o en el botón de la página de tecnologías
+1. Haz click en **+ Nueva Tecnología** en el menú desplegable **+ Añadir ▾** (barra superior).
 2. Rellena el formulario:
-   - **Name** — nombre de la tecnología
-   - **Description** — descripción breve
-   - **Official URL** — enlace a la web oficial (opcional)
-   - **Type** — tipo: language, framework, library, tool, database, platform u other
-3. Guarda
+   - **Name** — nombre de la tecnología.
+   - **Description** — descripción breve.
+   - **Official URL** — enlace a la web oficial (opcional).
+   - **Type** — tipo: language, framework, library, tool, database, platform u other.
+3. Guarda.
 
 ### Añadir un proyecto
 
-1. Haz click en **+ Project**
+1. Haz click en **+ Nuevo Proyecto** en el menú desplegable **+ Añadir ▾** (barra superior).
 2. Rellena el formulario:
-   - **Title** — nombre del proyecto
-   - **Type** — tipo de aplicación
-   - **Description** — descripción breve
-   - **Project URL** — enlace al repositorio o web (opcional)
-   - **Technologies used** — marca todas las tecnologías que usa el proyecto
-3. Guarda
+   - **Title** — nombre del proyecto.
+   - **Type** — tipo de aplicación.
+   - **Description** — descripción breve.
+   - **Project URL** — enlace al repositorio o web (opcional).
+   - **Technologies used** — marca todas las tecnologías que usa el proyecto.
+3. Guarda.
 
 ### Añadir una relación entre tecnologías
 
-1. Haz click en **⟷ Añadir relación** desde la página de tecnologías o desde el home
-2. Selecciona la **Tecnología A**, el **tipo de relación** y la **Tecnología B**
-3. Crea la relación
+1. Haz click en **⟷ Añadir relación** desde la página de tecnologías o desde el home.
+2. Selecciona la **Tecnología A**, el **tipo de relación** y la **Tecnología B**.
+3. Crea la relación.
 
 Esto enriquece el grafo y permite que las consultas de camino y compatibilidad sean más precisas.
 
 ---
 
-## 9. Por qué una base de datos de grafos
+## 11. Por qué una base de datos de grafos
 
 TechGraph está construido sobre **Neo4j**, una base de datos de grafos, en lugar de una base de datos relacional clásica como PostgreSQL o MySQL.
 

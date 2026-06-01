@@ -8,7 +8,15 @@ class GDSNotAvailableError(RuntimeError):
     pass
 
 
+import os
+
 def is_gds_available():
+    # Para Render o si no tenemos el plugin para neo4j desktop, desactivamos GDS
+    if os.environ.get('RENDER', '').lower() == 'true':
+        return False
+    if os.environ.get('USE_GDS', 'True').lower() in ('false', '0', 'f'):
+        return False
+        
     try:
         res, _ = db.cypher_query("SHOW PROCEDURES YIELD name WHERE name = 'gds.graph.exists' RETURN count(name) > 0")
         return res and res[0][0]

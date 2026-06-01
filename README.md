@@ -1,4 +1,4 @@
-﻿# TechGraph
+# TechGraph
 
 Explorador de tecnologías basado en grafos. Muestra cómo lenguajes, frameworks, librerías y proyectos se relacionan entre sí, demostrando el valor de una base de datos de grafos (Neo4j) frente a una relacional en según qué contextos.
 
@@ -29,7 +29,15 @@ El proyecto está desplegado en **Render** con base de datos en **Neo4j Aura Fre
 ### Requisitos
 
 - Python 3.11+
-- Neo4j Desktop corriendo en local con una instancia activa en el puerto `7687`
+- **Neo4j Desktop** corriendo en local con una instancia activa en el puerto `7687`.
+- **Plugin Graph Data Science (GDS)** instalado en tu base de datos Neo4j (necesario para el funcionamiento del motor de recomendaciones basadas en similitudes).
+
+#### ¿Cómo instalar el plugin GDS en Neo4j Desktop?
+1. Abre **Neo4j Desktop** y haz clic en los 3 puntos en la derecha del botón de iniciar la instancia en la cual se desea instalar el plugin.
+2. Haz clic en la pestaña **Plugins**.
+3. Busca la sección **Graph Data Science Library** y haz click en **Install**.
+4. Espera a que finalice la descarga e instalación.
+5. Si la base de datos estaba encendida, **reiníciala** (haz click en *Stop* y luego en *Start*) para que cargue el plugin correctamente.
 
 ### Pasos
 
@@ -51,10 +59,13 @@ pip install -r requirements.txt
 cp env.example .env
 ```
 
-Abre el `.env` y edita los valores marcados:
+Abre el `.env` y edita los valores correspondientes:
 
-- **`SECRET_KEY`** — genera una en [https://djecrety.ir](https://djecrety.ir)
-- **`NEO4J_BOLT_URL`** — sustituye `tu-contraseña` por la contraseña de tu instancia Neo4j local
+- **`SECRET_KEY`** — Genera una clave secreta en [https://djecrety.ir](https://djecrety.ir) y pégala aquí.
+- **`NEO4J_URI`** — URI de tu base de datos Neo4j (por defecto `bolt://localhost:7687`).
+- **`NEO4J_USER`** — Nombre de usuario de la instancia local de Neo4j (por defecto `neo4j`).
+- **`NEO4J_PASSWORD`** — La contraseña de tu instancia de Neo4j local.
+- **`GEMINI_API_KEY`** — (Opcional) Clave de API de Gemini si deseas utilizar el Asistente chatbot interactivo de arquitectura.
 
 #### 4. Migraciones
 ```bash
@@ -65,6 +76,10 @@ python manage.py migrate
 ```bash
 python manage.py seed_graph
 ```
+
+Este comando poblará el grafo con tecnologías, relaciones y proyectos reales desde las fixtures del proyecto y la API de búsqueda de GitHub. Puedes pasarle los siguientes parámetros opcionales:
+- `--clear` — Borra todos los nodos y relaciones del grafo (proyectos, tecnologías, tags y usuarios de prueba) antes de la inserción. Es muy recomendable usarlo para reiniciar a una base de datos limpia.
+- `--limit <N>` — Limita la cantidad de proyectos reales descargados de GitHub para indexar (por defecto `250`, máximo `500`).
 
 #### 6. Crear usuario de demostración
 ```bash

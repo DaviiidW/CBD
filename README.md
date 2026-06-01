@@ -66,6 +66,7 @@ Abre el `.env` y edita los valores correspondientes:
 - **`NEO4J_USER`** — Nombre de usuario de la instancia local de Neo4j (por defecto `neo4j`).
 - **`NEO4J_PASSWORD`** — La contraseña de tu instancia de Neo4j local.
 - **`GEMINI_API_KEY`** — (Opcional) Clave de API de Gemini si deseas utilizar el Asistente chatbot interactivo de arquitectura.
+- **`GEMINI_MODEL`** — (Opcional) Modelo de Gemini a utilizar (por defecto `gemini-flash-lite-latest`).
 
 #### 4. Migraciones
 ```bash

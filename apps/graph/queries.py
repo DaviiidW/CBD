@@ -96,7 +96,7 @@ def find_path_between_technologies(slug_a: str, slug_b: str) -> list[dict]:
     results, _ = db.cypher_query(
         """
         MATCH (a:Technology {slug: $slug_a}), (b:Technology {slug: $slug_b})
-        MATCH path = shortestPath((a)-[*..6]-(b))
+        MATCH path = shortestPath((a)-[:COMPATIBLE_WITH|DEPENDS_ON|ALTERNATIVE_TO|EXTENDS|USES|HAS_VERSION|TAGGED_AS|USES_VERSION*..6]-(b))
         UNWIND nodes(path) AS n
         RETURN 
             CASE 
@@ -208,7 +208,7 @@ def get_most_connected_technologies(limit: int = 10) -> list[dict]:
     results, _ = db.cypher_query(
         """
         MATCH (t:Technology)
-        OPTIONAL MATCH (t)-[r]-()
+        OPTIONAL MATCH (t)-[r:COMPATIBLE_WITH|DEPENDS_ON|ALTERNATIVE_TO|EXTENDS|USES|HAS_VERSION|TAGGED_AS]-()
         RETURN t.name AS name, t.slug AS slug, t.tech_type AS tech_type,
                count(r) AS connections
         ORDER BY connections DESC
@@ -227,7 +227,10 @@ def get_graph_stats() -> dict:
         """
         MATCH (t:Technology) WITH count(t) AS techs
         MATCH (p:Project) WITH techs, count(p) AS projects
-        MATCH ()-[r]->() WITH techs, projects, count(r) AS connections
+        MATCH (a)-[r]->(b)
+        WHERE (a:Technology OR a:Project OR a:TechnologyVersion OR a:Tag)
+          AND (b:Technology OR b:Project OR b:TechnologyVersion OR b:Tag)
+        WITH techs, projects, count(r) AS connections
         RETURN techs, projects, connections
         """
     )

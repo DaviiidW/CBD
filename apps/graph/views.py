@@ -257,6 +257,7 @@ def _build_tech_subgraph(tech) -> dict:
         """
         MATCH (t:Technology {slug: $slug})
         MATCH (t)-[r]-(n)
+        WHERE type(r) <> 'LIKES'
         RETURN 
             labels(n)[0] AS label,
             COALESCE(n.uid, n.name) AS id,

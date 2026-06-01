@@ -385,21 +385,26 @@ def unlike_technology(request, slug):
 @login_required
 def recommendations_view(request):
     username = request.user.username
+    gds_enabled = recommendation_service.is_gds_available()
 
     if request.method == 'POST' and 'recompute' in request.POST:
-        try:
-            recommendation_service.recompute_all()
-            messages.success(request, '¡Recomendaciones cargadas con éxito!')
-        except recommendation_service.GDSNotAvailableError as e:
-            messages.error(request, str(e))
-        except Exception as e:
-            messages.error(request, f'Error al obtener las recomendaciones: {str(e)}')
+        if gds_enabled:
+            try:
+                recommendation_service.recompute_all()
+                messages.success(request, '¡Recomendaciones avanzadas cargadas con éxito (GDS)!')
+            except recommendation_service.GDSNotAvailableError as e:
+                messages.error(request, str(e))
+            except Exception as e:
+                messages.error(request, f'Error al obtener las recomendaciones: {str(e)}')
+        else:
+            messages.info(request, 'El sistema está en modo básico. Las sugerencias se calculan en tiempo real sin recálculo de GDS.')
         return redirect('recommendations')
 
     recommendations = recommendation_service.get_recommendations(username, limit=10)
 
     return render(request, 'graph/recommendations.html', {
         'recommendations': recommendations,
+        'gds_enabled': gds_enabled,
     })
 
 

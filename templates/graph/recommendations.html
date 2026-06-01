@@ -5,9 +5,16 @@
 <div class="page-header">
   <div>
     <h1>Motor de Recomendación</h1>
-    <p>Sugerencias de tecnologías personalizadas basadas en Neo4j Graph Data Science (GDS)</p>
+    {% if gds_enabled %}
+      <p>Sugerencias de tecnologías personalizadas basadas en <strong>Neo4j Graph Data Science (GDS)</strong></p>
+    {% else %}
+      <p>Sugerencias de tecnologías personalizadas (<strong>Modo Básico</strong>)</p>
+      <div style="background-color: var(--accent2); color: #fff; padding: 0.75rem; border-radius: 6px; margin-top: 1rem; font-size: 0.9rem; max-width: 600px;">
+        <strong>Aviso:</strong> El motor avanzado de recomendación (GDS) no está disponible en este entorno. Estás viendo un sistema de recomendación colaborativo simplificado.
+      </div>
+    {% endif %}
   </div>
-  {% if user.is_authenticated %}
+  {% if user.is_authenticated and gds_enabled %}
     <div>
       <form method="post" style="display:inline">
         {% csrf_token %}
@@ -47,7 +54,7 @@
   <div class="card" style="text-align:center; padding:3rem 1.5rem; max-width:680px; margin:0 auto">
     <p style="color:var(--text-dim); margin-bottom:1rem; font-weight:700">Aún no se puede calcular tus recomendaciones para tu perfil.</p>
     <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.5rem; line-height:1.5">
-      Para ver tus recomendaciones colaborativas, dale Like a tecnologías de tu interés y presiona el botón <strong>Recargar sugerencias</strong> arriba. 
+      Para ver tus recomendaciones colaborativas, dale Like a tecnologías de tu interés{% if gds_enabled %} y presiona el botón <strong>Recargar sugerencias</strong> arriba{% endif %}.
     </p>
     <a href="{% url 'technology_list' %}" class="btn btn-primary btn-sm">Explorar catálogo y dar Like</a>
   </div>

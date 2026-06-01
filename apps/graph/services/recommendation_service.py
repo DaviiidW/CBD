@@ -8,7 +8,15 @@ class GDSNotAvailableError(RuntimeError):
     pass
 
 
+import os
+
 def is_gds_available():
+    # Para Render o si no tenemos el plugin para neo4j desktop, desactivamos GDS
+    if os.environ.get('RENDER', '').lower() == 'true':
+        return False
+    if os.environ.get('USE_GDS', 'True').lower() in ('false', '0', 'f'):
+        return False
+        
     try:
         res, _ = db.cypher_query("SHOW PROCEDURES YIELD name WHERE name = 'gds.graph.exists' RETURN count(name) > 0")
         return res and res[0][0]
@@ -93,19 +101,38 @@ def recompute_all(projection_name="user-tech-likes"):
 
 
 def get_recommendations(username, limit=10):
-    query = """
-    MATCH (u:User {username: $username})-[s:SIMILAR_TO]-(other:User)
-    MATCH (other)-[:LIKES]->(tech:Technology)
-    WHERE NOT (u)-[:LIKES]->(tech)
-    RETURN tech.name AS name,
-           tech.slug AS slug,
-           tech.tech_type AS tech_type,
-           tech.description AS description,
-           sum(s.score) AS recommendation_score,
-           collect(distinct other.username) AS similar_users
-    ORDER BY recommendation_score DESC
-    LIMIT $limit
-    """
+    gds_enabled = is_gds_available()
+    
+    if gds_enabled:
+        query = """
+        MATCH (u:User {username: $username})-[s:SIMILAR_TO]-(other:User)
+        MATCH (other)-[:LIKES]->(tech:Technology)
+        WHERE NOT (u)-[:LIKES]->(tech)
+        RETURN tech.name AS name,
+               tech.slug AS slug,
+               tech.tech_type AS tech_type,
+               tech.description AS description,
+               sum(s.score) AS recommendation_score,
+               collect(distinct other.username) AS similar_users
+        ORDER BY recommendation_score DESC
+        LIMIT $limit
+        """
+    else:
+        # Adaptación para el despliegue sin GDS: Usuarios que tienen al menos una tecnología en común
+        query = """
+        MATCH (u:User {username: $username})-[:LIKES]->(common:Technology)<-[:LIKES]-(other:User)
+        MATCH (other)-[:LIKES]->(tech:Technology)
+        WHERE NOT (u)-[:LIKES]->(tech)
+        RETURN tech.name AS name,
+               tech.slug AS slug,
+               tech.tech_type AS tech_type,
+               tech.description AS description,
+               count(other) AS recommendation_score,
+               collect(distinct other.username) AS similar_users
+        ORDER BY recommendation_score DESC
+        LIMIT $limit
+        """
+        
     results, _ = db.cypher_query(query, {"username": username, "limit": limit})
     
     return [
@@ -114,7 +141,7 @@ def get_recommendations(username, limit=10):
             "slug": row[1],
             "tech_type": row[2],
             "description": row[3],
-            "score": round(row[4], 3),
+            "score": round(row[4], 3) if gds_enabled else row[4],
             "similar_users": row[5]
         }
         for row in results

@@ -13,6 +13,8 @@ La aplicación está construida sobre una **base de datos de grafos** (Neo4j), l
 
 **Acceso**: [https://cbd-q00l.onrender.com](https://cbd-q00l.onrender.com) o bien en local siguiendo las instrucciones del [README.md](README.md).
 
+Este es el enlace al video demostración donde se prueban todas las funcionalidades: \url{https://youtu.be/RtjM0tVeVvE}
+
 ---
 
 ## Índice

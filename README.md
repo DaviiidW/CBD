@@ -4,6 +4,8 @@ Explorador de tecnologías basado en grafos. Muestra cómo lenguajes, frameworks
 
 >Para más información sobre el uso de la aplicación consulta el [Manual de Usuario](./MANUAL_USUARIO.md).
 
+Este es el enlace al video demostración donde se prueban todas las funcionalidades: \url{https://youtu.be/RtjM0tVeVvE}
+
 
 ## Despliegue
 
